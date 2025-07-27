@@ -11,20 +11,7 @@ export default function RobotModel({
   const group = useRef<THREE.Group>(null);
   const leftPupilRef = useRef<THREE.Mesh>(null);
   const rightPupilRef = useRef<THREE.Mesh>(null);
-  const eyelidRefLeft = useRef<THREE.Mesh>(null);
-  const eyelidRefRight = useRef<THREE.Mesh>(null);
   const { scene } = useGLTF("/models/robot.glb");
-
-  const [blink, setBlink] = useState(false);
-
-  // رمش كل ثانيتين إلى 3
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBlink(true);
-      setTimeout(() => setBlink(false), 150); // سرعة الرمش
-    }, 2500 + Math.random() * 1000); // فترة عشوائية قليلاً
-    return () => clearInterval(interval);
-  }, []);
 
   useFrame((state) => {
     if (!group.current) return;
@@ -66,21 +53,6 @@ export default function RobotModel({
         rightPupilRef.current.position.y,
         mouse.y * maxOffset,
         0.2
-      );
-    }
-
-    // حركة الجفن للرمش
-    if (eyelidRefLeft.current && eyelidRefRight.current) {
-      const targetY = blink ? 0 : 0.3;
-      eyelidRefLeft.current.position.y = THREE.MathUtils.lerp(
-        eyelidRefLeft.current.position.y,
-        targetY,
-        0.3
-      );
-      eyelidRefRight.current.position.y = THREE.MathUtils.lerp(
-        eyelidRefRight.current.position.y,
-        targetY,
-        0.3
       );
     }
   });

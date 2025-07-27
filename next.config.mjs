@@ -1,7 +1,3 @@
-import createNextIntlPlugin from 'next-intl/plugin';
- 
-const withNextIntl = createNextIntlPlugin();
- 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -14,5 +10,3 @@ const nextConfig = {
     unoptimized: true,
   },
 };
- 
-export default withNextIntl(nextConfig);

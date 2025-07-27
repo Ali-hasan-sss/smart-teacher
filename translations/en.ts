@@ -1,0 +1,54 @@
+export default {
+  navigation: {
+    home: "Home",
+    about: "About",
+    courses: "Courses",
+    contact: "Contact",
+    login: "Login",
+    register: "Register",
+    logout: "Logout",
+  },
+  homePage: {
+    title: "Welcome to Smart Teacher",
+    subtitle: "Learn smarter, not harder with AI-powered education",
+    startLearning: "Start Learning",
+    whyChoose: "Why Choose Smart Teacher?",
+    description:
+      "Discover a new way of learning with our intelligent teaching platform",
+    aiPowered: "AI-Powered Learning",
+    aiDescription:
+      "Personalized learning experience powered by artificial intelligence",
+    interactive: "Interactive Courses",
+    interactiveDescription:
+      "Engaging and interactive courses designed for effective learning",
+    global: "Global Access",
+    globalDescription:
+      "Learn from anywhere in the world with multilingual support",
+  },
+  auth: {
+    loginTitle: "Login to Your Account",
+    registerTitle: "Create New Account",
+    email: "Email",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    firstName: "First Name",
+    lastName: "Last Name",
+    phoneNumber: "Phone Number",
+    birthdate: "Birth Date",
+    loginButton: "Login",
+    registerButton: "Register",
+    dontHaveAccount: "Don't have an account?",
+    alreadyHaveAccount: "Already have an account?",
+    loginHere: "Login here",
+    registerHere: "Register here",
+    fillAllFields: "Please fill in all fields",
+    passwordsDontMatch: "Passwords do not match",
+    invalidEmail: "Please enter a valid email address",
+  },
+  courses: {
+    title: "Your Courses",
+    mathematics: "Mathematics",
+    mathDescription: "Learn advanced mathematics concepts",
+    startLearning: "Start Learning",
+  },
+};

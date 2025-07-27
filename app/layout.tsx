@@ -4,7 +4,8 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { LanguageProvider } from "../contexts/language-context";
-import { AuthProvider } from "@/contexts/auth-context"; // عدّل المسار حسب مشروعك
+import { Navbar } from "@/components/navbar";
+import { ReduxProvider } from "@/store/ReduxProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,9 +29,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <LanguageProvider>{children}</LanguageProvider>
-          </AuthProvider>
+          <ReduxProvider>
+            <LanguageProvider>
+              <Navbar />
+              {children}
+            </LanguageProvider>
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>
