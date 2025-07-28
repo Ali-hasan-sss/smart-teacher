@@ -5,20 +5,38 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { fetchCourses } from "@/store/course/courseThunks";
-import { useRouter } from "next/navigation";
+import { addBookmark, removeBookmark } from "@/store/bookmark/bookmarkThunks";
+import CourseCard from "@/components/CourseCard";
 
 export default function CoursesPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
-
+  const subjectId = localStorage.getItem("selectedSubject");
   const { courses, loading, error } = useSelector(
     (state: RootState) => state.course
   );
 
+  const isBookmarked = (courseId: number) => {
+    const course = courses.find((c) => c.id === courseId);
+    return course?.bookmarked === true;
+  };
+
+  const toggleBookmark = (courseId: number) => {
+    if (isBookmarked(courseId)) {
+      dispatch(removeBookmark(`${courseId}`));
+    } else {
+      dispatch(addBookmark({ courseId: courseId.toString() }));
+    }
+  };
+
   useEffect(() => {
-    // جلب الكورسات عند تحميل الصفحة
-    dispatch(fetchCourses({ pageNumber: 1, pageSize: 10 }));
+    dispatch(
+      fetchCourses({
+        pageNumber: 1,
+        pageSize: 10,
+        subjectId: Number(subjectId),
+      })
+    );
   }, [dispatch]);
 
   return (
@@ -35,35 +53,14 @@ export default function CoursesPage() {
           {!loading &&
             !error &&
             courses.map((course) => (
-              <div
+              <CourseCard
                 key={course.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-              >
-                {course.image && (
-                  <img
-                    src={course.image}
-                    alt={
-                      typeof course.title === "string"
-                        ? course.title
-                        : course.title?.en || "عنوان غير متوفر"
-                    }
-                    className="w-full h-48 object-cover rounded mb-4"
-                  />
-                )}
-
-                <h3 className="text-xl font-semibold mb-2">
-                  {typeof course.title === "string"
-                    ? course.title
-                    : course.title?.en || "عنوان غير متوفر"}
-                </h3>
-
-                <div
-                  onClick={() => router.push(`/courses/${course.id}`)} // الانتقال لصفحة تفاصيل الكورس
-                  className="bg-blue-600 text-white px-4 py-2 rounded text-center cursor-pointer hover:bg-blue-700"
-                >
-                  {t("courses.startLearning")}
-                </div>
-              </div>
+                id={course.id}
+                image={course.image}
+                title={course.title || "عنوان غير متوفر"}
+                isBookmarked={course.bookmarked}
+                onToggleBookmark={toggleBookmark}
+              />
             ))}
         </div>
       </div>

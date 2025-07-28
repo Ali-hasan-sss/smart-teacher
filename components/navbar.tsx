@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSelector } from "react-redux";
@@ -8,7 +8,16 @@ import { logout } from "@/store/auth/authSlice";
 import { useLanguage } from "@/contexts/language-context";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, Globe, LogOut, User } from "lucide-react";
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Globe,
+  LogOut,
+  User,
+  Bookmark,
+} from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
 
@@ -18,8 +27,9 @@ export function Navbar() {
   const { language, setLanguage, isRTL } = useLanguage();
   const { theme, setTheme } = useTheme();
   const dispatch = useAppDispatch();
-
   const user = useSelector((state: RootState) => state.auth.user);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -28,9 +38,23 @@ export function Navbar() {
 
   const navigation = [
     { name: t("navigation.home"), href: "/" },
-    { name: t("navigation.courses"), href: "/courses" },
+    { name: t("navigation.subjects"), href: "/subjects" },
     { name: t("navigation.contact"), href: "/contact" },
   ];
+  // إغلاق عند النقر خارج القائمة
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleLanguage = () => {
     const newLang = language === "en" ? "ar" : "en";
@@ -89,13 +113,42 @@ export function Navbar() {
 
             {/* Auth Actions */}
             {user ? (
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span className="text-sm">{user.firstName}</span>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-1" />
-                  {t("navigation.logout")}
-                </Button>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition"
+                >
+                  <User className="h-5 w-5" />
+                  <span className="text-sm">{user.firstName}</span>
+                </button>
+
+                {showDropdown && (
+                  <div className="absolute ltr:right-0 rtl:left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 z-50">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 ltr:flex-row rtl:flex-row-reverse"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <User className="w-4 h-4" />
+                      {t("navigation.profile")}
+                    </Link>
+                    <Link
+                      href="/bookmarkList"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 ltr:flex-row rtl:flex-row-reverse"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <Bookmark className="w-4 h-4" />
+                      {t("navigation.bookmarks")}
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 ltr:flex-row rtl:flex-row-reverse"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t("navigation.logout")}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div
@@ -160,14 +213,34 @@ export function Navbar() {
             </div>
 
             {user ? (
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-3"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("navigation.logout")}
-              </Button>
+              <div className="relative group">
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <User className="h-5 w-5" />
+                  <span className="text-sm">{user.firstName}</span>
+                </div>
+
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 z-50 hidden group-hover:block group-focus:block">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {t("navigation.profile")}
+                  </Link>
+                  <Link
+                    href="/bookmarks"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {t("navigation.bookmarks")}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                  >
+                    {t("navigation.logout")}
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="px-3 py-2 space-y-2">
                 <Link href="/login" className="block">

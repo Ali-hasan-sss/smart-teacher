@@ -17,11 +17,12 @@ export interface Section {
 
 export interface Course {
   id: number;
-  title: CourseTitle;
+  title: string;
   description: string;
   subjectId: number;
   image: string;
   courseFile: string;
+  bookmarked: boolean;
   enableAI: boolean;
   learningFile: string;
   createdAt: string;

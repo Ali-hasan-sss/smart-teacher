@@ -51,6 +51,7 @@
     "expo-asset": "latest",
     "expo-file-system": "latest",
     "expo-gl": "latest",
+    "franc": "^6.2.0",
     "geist": "^1.3.1",
     "input-otp": "1.4.1",
     "js-cookie": "^3.0.5",

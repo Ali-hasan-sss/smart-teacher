@@ -4,9 +4,9 @@ import axios from "@/lib/axios";
 import { Bookmark, BookmarkResponse } from "@/types/bookmark";
 
 export const fetchBookmarks = createAsyncThunk<
-  Bookmark[], // نوع النتيجة عند النجاح (array of Bookmark)
-  void, // لا يأخذ باراميتر
-  { rejectValue: string } // نوع الخطأ المرفوع
+  Bookmark[],
+  void,
+  { rejectValue: string }
 >("bookmark/fetchBookmarks", async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get<BookmarkResponse>(
@@ -15,7 +15,7 @@ export const fetchBookmarks = createAsyncThunk<
     if (!response.data.isSuccess) {
       return rejectWithValue(response.data.message);
     }
-    return response.data.data;
+    return response.data.data.items;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || error.message);
   }
@@ -29,7 +29,7 @@ export const addBookmark = createAsyncThunk(
         "/api/Client/Bookmark/Add",
         bookmarkData
       );
-      return response.data; // عادة تأكيد الإضافة
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }

@@ -33,7 +33,15 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setLanguageState(savedLang || "ar");
   }, []);
 
-  if (language === null) return null; // ✅ تجنب التصيير حتى تحديد اللغة
+  // تغيير اتجاه الموقع بناءً على اللغة
+  useEffect(() => {
+    if (language) {
+      document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+      document.documentElement.lang = language;
+    }
+  }, [language]);
+
+  if (language === null) return null;
 
   const isRTL = language === "ar";
 

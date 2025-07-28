@@ -16,12 +16,15 @@ export const fetchCourses = createAsyncThunk<
   CourseResponse,
   FetchCoursesParams
 >("course/fetchCourses", async (params) => {
-  const response = await axios.get<CourseResponse>("/api/Client/Course", {
-    params,
-    headers: {
-      "Accept-Language": "en",
-    },
-  });
+  const response = await axios.get<CourseResponse>(
+    "/api/Client/Course?IncludeBookmark=true&",
+    {
+      params,
+      headers: {
+        "Accept-Language": "en",
+      },
+    }
+  );
   return response.data;
 });
 

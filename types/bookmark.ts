@@ -41,5 +41,7 @@ export interface BookmarkResponse {
   isSuccess: boolean;
   message: string;
   code: number;
-  data: Bookmark[];
+  data: {
+    items: Bookmark[];
+  };
 }

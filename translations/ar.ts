@@ -3,10 +3,13 @@ export default {
     home: "الرئيسية",
     about: "حول",
     courses: "الدورات",
+    subjects: "المواد الدراسية",
     contact: "اتصل بنا",
     login: "تسجيل الدخول",
     register: "إنشاء حساب",
     logout: "تسجيل الخروج",
+    profile: "الملف الشخصي",
+    bookmarks: "المحفوظات",
   },
   homePage: {
     title: "مرحباً بك في المعلم الذكي",
@@ -42,9 +45,13 @@ export default {
     invalidEmail: "يرجى إدخال عنوان بريد إلكتروني صحيح",
   },
   courses: {
-    title: "دوراتك",
+    title: "الدروس",
+    courseCount: "عدد الدروس ",
     mathematics: "الرياضيات",
     mathDescription: "تعلم مفاهيم الرياضيات المتقدمة",
-    startLearning: "ابدأ التعلم",
+    startLearning: "ابدأ الدراسة",
+  },
+  subjects: {
+    title: "المواد الدراسية",
   },
 };

@@ -3,10 +3,13 @@ export default {
     home: "Home",
     about: "About",
     courses: "Courses",
+    subjects: "subjects",
     contact: "Contact",
     login: "Login",
     register: "Register",
     logout: "Logout",
+    profile: "Profile",
+    bookmarks: "Bookmarks",
   },
   homePage: {
     title: "Welcome to Smart Teacher",
@@ -46,9 +49,13 @@ export default {
     invalidEmail: "Please enter a valid email address",
   },
   courses: {
-    title: "Your Courses",
+    title: "Courses",
+    courseCount: "Courses Count",
     mathematics: "Mathematics",
     mathDescription: "Learn advanced mathematics concepts",
     startLearning: "Start Learning",
+  },
+  subjects: {
+    title: "Your Subjects",
   },
 };
