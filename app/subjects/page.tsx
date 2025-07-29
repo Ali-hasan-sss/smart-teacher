@@ -1,12 +1,14 @@
 "use client";
 
+import LoaderPage from "@/components/loaders/LoaderPage";
+import PaginationComponent from "@/components/pagination";
 import SubjectCard from "@/components/SubjectCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RootState } from "@/store";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchSubjects } from "@/store/subject/subjectThunk";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 export default function SubjectsList() {
@@ -17,21 +19,21 @@ export default function SubjectsList() {
   );
   const user = useSelector((state: RootState) => state.auth.user);
   const gradeId = user?.grade?.id;
-  const { t } = useTranslation();
-
+  const { t, language } = useTranslation();
+  const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     if (gradeId) {
       dispatch(fetchSubjects({ gradeId }));
     }
-  }, [gradeId, dispatch]);
+  }, [gradeId, dispatch, language]);
 
   const startStudy = (subjectId: number) => {
     localStorage.setItem("selectedSubject", String(subjectId));
     router.push("/courses");
   };
 
-  if (loading) return <div>جاري التحميل...</div>;
-  if (error) return <div>خطأ: {error}</div>;
+  if (loading) return <LoaderPage />;
+  if (error) return <div> {error}</div>;
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -51,13 +53,22 @@ export default function SubjectsList() {
                 id: subject.id,
                 title: subject.title,
                 description: subject.description,
-                coursesCount: subject.courseCount,
+                coursesCount: subject.coursesCount,
                 image: subject.image,
+                pdfFile: subject.pdfFile,
               }}
               onStartStudy={() => startStudy(subject.id)}
             />
           ))}
         </div>
+        <PaginationComponent
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            dispatch(fetchSubjects({ gradeId, pageNumber: page }));
+          }}
+        />
       </div>
     </div>
   );

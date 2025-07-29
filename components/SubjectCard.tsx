@@ -1,4 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
+import { Download } from "lucide-react";
 import React from "react";
 
 interface SubjectCardProps {
@@ -8,6 +9,7 @@ interface SubjectCardProps {
     description: string;
     image: string;
     coursesCount: number;
+    pdfFile?: string;
   };
   onStartStudy: (subjectId: number) => void;
 }
@@ -26,21 +28,33 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onStartStudy }) => {
       />
       <div className="p-4 flex flex-col flex-1 justify-between">
         <div>
-          <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">
-            {subject.title}
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+              {subject.title}
+            </h2>
+            {subject.pdfFile && (
+              <a
+                href={subject.pdfFile}
+                download
+                className="text-blue-600 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                title={t("courses.downloadMaterial")}
+              >
+                <Download size={20} />
+              </a>
+            )}
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
             {shortDescription}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {t("courses.courseCount")} : {subject.coursesCount}
+            {t("courses.courseCount")} : ({subject.coursesCount})
           </p>
         </div>
         <button
           onClick={() => onStartStudy(subject.id)}
           className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
         >
-          {t("courses.startLearning")}
+          {t("courses.exploer")}
         </button>
       </div>
     </div>

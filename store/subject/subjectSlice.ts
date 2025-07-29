@@ -5,7 +5,7 @@ import { fetchSubjects } from "./subjectThunk";
 interface Subject {
   title: string;
   description: string;
-  courseCount: number;
+  coursesCount: number;
   image: string;
   pdfFile: string;
   gradeId: number;

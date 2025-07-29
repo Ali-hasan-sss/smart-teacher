@@ -36,16 +36,15 @@ export const addBookmark = createAsyncThunk(
   }
 );
 
-export const removeBookmark = createAsyncThunk(
-  "bookmark/removeBookmark",
-  async (courseId: string, { rejectWithValue }) => {
-    try {
-      const response = await axios.delete(
-        `/api/Client/Bookmark/Remove/${courseId}`
-      );
-      return { courseId, ...response.data };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message);
-    }
+export const removeBookmark = createAsyncThunk<
+  number,
+  string,
+  { rejectValue: string }
+>("bookmark/removeBookmark", async (courseId, { rejectWithValue }) => {
+  try {
+    await axios.delete(`/api/Client/Bookmark/Remove/${courseId}`);
+    return Number(courseId); // ← فقط ID
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || error.message);
   }
-);
+});

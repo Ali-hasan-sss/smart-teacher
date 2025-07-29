@@ -3,6 +3,8 @@
 import { Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 interface CourseCardProps {
   id: number;
@@ -10,6 +12,7 @@ interface CourseCardProps {
   title: string;
   isBookmarked: boolean;
   onToggleBookmark: (courseId: number) => void;
+  toggleLoading?: boolean;
 }
 
 export default function CourseCard({
@@ -21,7 +24,9 @@ export default function CourseCard({
 }: CourseCardProps) {
   const router = useRouter();
   const { t } = useTranslation();
-
+  const { bookmarks, loading, error, toggleLoading } = useSelector(
+    (state: RootState) => state.bookmark
+  );
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md  relative">
       {image && (
@@ -45,10 +50,38 @@ export default function CourseCard({
         </div>
         <button
           onClick={() => onToggleBookmark(id)}
-          className="ml-2 mx-2 text-blue-600 hover:text-blue-800"
-          title={isBookmarked ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+          className="mr-2 text-blue-600 relative w-[40px] h-[40px] flex items-center justify-center"
+          title={
+            isBookmarked
+              ? t("courses.save_bookMark")
+              : t("courses.remove_bookMark")
+          }
         >
-          <Bookmark size={24} fill={isBookmarked ? "#2563eb" : "none"} />
+          <div className="w-[35px] h-[35px] flex items-center justify-center">
+            {toggleLoading === id ? (
+              <svg
+                className="w-[30px] h-[30px] text-blue-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path
+                  className="stroke-path"
+                  d="M5 3v18l7-5 7 5V3H5z"
+                  style={{
+                    strokeDasharray: 100,
+                    strokeDashoffset: 100,
+                    animation: "dash 2s linear forwards infinite",
+                  }}
+                />
+              </svg>
+            ) : (
+              <Bookmark size={35} fill={isBookmarked ? "#2563eb" : "none"} />
+            )}
+          </div>
         </button>
       </div>
     </div>

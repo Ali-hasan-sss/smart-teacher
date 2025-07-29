@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "@/lib/axios";
+import Cookies from "js-cookie";
 
 interface AccountState {
   user: any | null;
@@ -152,9 +153,10 @@ const accountSlice = createSlice({
       })
       .addCase(updateAccount.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false;
-        state.user = action.payload;
-        state.successMessage = "تم تحديث البيانات بنجاح";
+        state.user = { ...state.user, ...action.payload };
+        Cookies.set("user", JSON.stringify(state.user));
       })
+
       .addCase(updateAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -201,7 +203,7 @@ const accountSlice = createSlice({
       })
       .addCase(getAccount.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.data;
       })
       .addCase(getAccount.rejected, (state, action) => {
         state.loading = false;

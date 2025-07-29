@@ -17,12 +17,16 @@ instance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    if (typeof window !== "undefined") {
+      const lang = localStorage.getItem("lang") || "ar";
+      config.headers["Accept-Language"] = lang;
+      config.headers["lang"] = lang;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// 🔁 تجديد التوكن تلقائيًا
 instance.interceptors.response.use(
   (res) => res,
   async (err) => {

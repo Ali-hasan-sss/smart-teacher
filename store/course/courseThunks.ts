@@ -15,17 +15,24 @@ interface FetchCoursesParams {
 export const fetchCourses = createAsyncThunk<
   CourseResponse,
   FetchCoursesParams
->("course/fetchCourses", async (params) => {
-  const response = await axios.get<CourseResponse>(
-    "/api/Client/Course?IncludeBookmark=true&",
-    {
-      params,
-      headers: {
-        "Accept-Language": "en",
-      },
-    }
-  );
-  return response.data;
+>("course/fetchCourses", async (params, thunkAPI) => {
+  try {
+    const response = await axios.get(
+      "/api/Client/Course?IncludeBookmark=true",
+      {
+        params,
+        headers: {
+          "Accept-Language": "en",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || "حدث خطأ ما"
+    );
+  }
 });
 
 export const fetchCourseById = createAsyncThunk<SingleCourseResponse, number>(

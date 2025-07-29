@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,12 +32,15 @@ export function Navbar() {
   const user = useSelector((state: RootState) => state.auth.user);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-
+  const pathname = usePathname();
+  useEffect(() => {
+    // يتم تنفيذ هذا عند تغير بيانات المستخدم
+    console.log("تحديث في بيانات المستخدم:", user);
+  }, [user]);
   const handleLogout = () => {
     dispatch(logout());
     setIsOpen(false);
   };
-
   const navigation = [
     { name: t("navigation.home"), href: "/" },
     { name: t("navigation.subjects"), href: "/subjects" },
@@ -83,7 +88,11 @@ export function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors"
+                className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                  pathname === item.href
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold"
+                    : ""
+                }`}
               >
                 {item.name}
               </Link>
@@ -116,10 +125,19 @@ export function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition"
+                  className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition"
                 >
-                  <User className="h-5 w-5" />
-                  <span className="text-sm">{user.firstName}</span>
+                  {user.image ? (
+                    <Avatar className="w-7 h-7">
+                      <AvatarImage src={user.image} alt={user.firstName} />
+                      <AvatarFallback>
+                        {user.firstName?.[0] || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                  <span className="text-sm px-2">{user.firstName}</span>
                 </button>
 
                 {showDropdown && (
@@ -189,7 +207,11 @@ export function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 block px-3 py-2 text-base font-medium"
+                className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 block px-3 py-2 text-base font-medium rounded-md ${
+                  pathname === item.href
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold"
+                    : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 {item.name}
@@ -213,34 +235,43 @@ export function Navbar() {
             </div>
 
             {user ? (
-              <div className="relative group">
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <User className="h-5 w-5" />
-                  <span className="text-sm">{user.firstName}</span>
-                </div>
-
-                {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 z-50 hidden group-hover:block group-focus:block">
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    {t("navigation.profile")}
-                  </Link>
-                  <Link
-                    href="/bookmarks"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    {t("navigation.bookmarks")}
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                  >
-                    {t("navigation.logout")}
-                  </button>
-                </div>
-              </div>
+              <>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-4 py-2 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 ltr:flex-row rtl:flex-row-reverse"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {user.image ? (
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={user.image} alt={user.firstName} />
+                      <AvatarFallback>
+                        {user.firstName?.[0] || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User className="w-5 h-5" />
+                  )}
+                  {t("navigation.profile")}
+                </Link>
+                <Link
+                  href="/bookmarkList"
+                  className="flex items-center gap-2 px-4 py-2 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 ltr:flex-row rtl:flex-row-reverse"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Bookmark className="w-5 h-5" />
+                  {t("navigation.bookmarks")}
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-base text-red-600 hover:bg-red-50 dark:hover:bg-red-900 ltr:flex-row rtl:flex-row-reverse"
+                >
+                  <LogOut className="w-5 h-5" />
+                  {t("navigation.logout")}
+                </button>
+              </>
             ) : (
               <div className="px-3 py-2 space-y-2">
                 <Link href="/login" className="block">

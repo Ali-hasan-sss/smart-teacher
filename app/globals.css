@@ -81,3 +81,14 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.stroke-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: dash 2s linear forwards infinite;
+}

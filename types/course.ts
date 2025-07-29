@@ -37,7 +37,12 @@ export interface CourseResponse {
   code: number;
   data: {
     items: Course[];
+    totalPages: number;
   };
+}
+export interface CourseListData {
+  items: Course[];
+  totalPages: number;
 }
 
 export interface SingleCourseResponse {
