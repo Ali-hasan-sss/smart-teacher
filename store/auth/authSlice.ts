@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { login, register } from "./authThunks";
 import Cookies from "js-cookie";
+import { RootState } from "@/store";
 
 interface AuthState {
   user: any | null;
@@ -86,6 +87,9 @@ const authSlice = createSlice({
       });
   },
 });
+
+export const isLoggedIn = (state: { auth: AuthState }) =>
+  Boolean(state.auth.user && state.auth.token);
 
 export const { logout, setUser } = authSlice.actions;
 export default authSlice.reducer;

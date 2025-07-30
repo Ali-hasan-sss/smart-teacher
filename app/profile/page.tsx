@@ -30,7 +30,7 @@ export default function AccountInfo() {
   });
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, loading, error, successMessage } = useSelector(
+  const { user, loading, error } = useSelector(
     (state: RootState) => state.account
   );
   const { toast } = useToast();
@@ -42,7 +42,7 @@ export default function AccountInfo() {
   }, [dispatch]);
   const handleEdit = () => setIsEditing(true);
   const handleCancel = () => setIsEditing(false);
-  // تعديل handleSave ليغلق الديالوج فقط عند نجاح العملية
+
   const handleSave = async (updatedData: AccountData) => {
     setPending(true);
     try {
@@ -100,8 +100,9 @@ export default function AccountInfo() {
       setPending(false);
     }
   };
-
-  if (!user) return <ProfilePlaceholder />;
+  if (loading) return <ProfilePlaceholder />;
+  if (error) return <p className="text-red-600 mb-4">{error}</p>;
+  if (!user) return null;
 
   return (
     <div className="py-8">

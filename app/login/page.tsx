@@ -20,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/auth/authThunks";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
+import { setUser } from "@/store/auth/authSlice";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -49,7 +50,6 @@ export default function LoginPage() {
     }
 
     const resultAction = await dispatch(login({ email, password }));
-
     if (login.fulfilled.match(resultAction)) {
       router.push("/");
     } else if (login.rejected.match(resultAction)) {

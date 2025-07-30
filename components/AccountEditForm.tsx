@@ -12,6 +12,7 @@ import {
 import { useState, ChangeEvent, FormEvent } from "react";
 import axios from "@/lib/axios";
 import { useTranslation } from "@/hooks/useTranslation";
+import GradeSelect from "./GradeSelect";
 
 interface AccountEditFormProps {
   data: any;
@@ -27,7 +28,10 @@ export default function AccountEditForm({
   pending,
 }: AccountEditFormProps) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<any>(data);
+  const [formData, setFormData] = useState<any>({
+    ...data,
+    gradeId: data.grade?.id?.toString() ?? "",
+  });
   const [uploading, setUploading] = useState(false);
 
   const [newImage, setNewImage] = useState<string | null>(null);
@@ -64,6 +68,12 @@ export default function AccountEditForm({
         setUploading(false);
       }
     }
+  };
+  const handleGradeChange = (value: number) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      gradeId: value.toString(),
+    }));
   };
 
   const handleRemoveImage = () => {
@@ -197,13 +207,11 @@ export default function AccountEditForm({
           <div className="flex items-center gap-2">
             <GraduationCap className="text-blue-300" />
             <span className="font-semibold">{t("profile.grade")}:</span>
-            <input
-              type="text"
-              name="grade"
-              value={formData.grade?.title || ""}
-              readOnly
-              className="bg-gray-100 border-b border-blue-100 outline-none w-32 text-inherit cursor-not-allowed"
-              disabled
+            <GradeSelect
+              value={parseInt(formData.gradeId || "0")}
+              onChange={handleGradeChange}
+              placeholder="اختر الصف الدراسي"
+              className="mb-4"
             />
           </div>
         </div>

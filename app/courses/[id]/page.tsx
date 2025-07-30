@@ -8,7 +8,7 @@ import { fetchCourseById } from "@/store/course/courseThunks";
 import { useTranslation } from "@/hooks/useTranslation";
 import { franc } from "franc";
 import LessonPlaceholder from "@/components/loaders/LessonPlaceholder";
-import { Download } from "lucide-react";
+import { Download, FileText } from "lucide-react";
 
 export default function CourseDetailsPage() {
   const { t, language } = useTranslation();
@@ -53,10 +53,10 @@ export default function CourseDetailsPage() {
           <a
             href={selectedCourse.courseFile}
             download
-            className="text-white rounded-full bg-blue-500 flex items-center justify-center w-10 h-10 font-bold cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            className="text-white rounded-full bg-blue-500 flex items-center justify-center w-10 h-10 font-bold cursor-pointer hover:text-blue-800 dark:hover:text-blue-300"
             title={t("courses.downloadMaterial")}
           >
-            <Download size={20} />
+            <FileText size={20} />
           </a>
         )}
       </div>
@@ -72,6 +72,18 @@ export default function CourseDetailsPage() {
       <p className="text-lg whitespace-pre-wrap mb-8">
         {descriptionText || "لا يوجد وصف"}
       </p>
+      {selectedCourse.type === "Quiz" && selectedCourse.courseFile && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-2">
+            {t("courses.viewPdf") || "معاينة الملف"}
+          </h2>
+          <iframe
+            src={selectedCourse.courseFile}
+            className="w-full h-[600px] rounded border"
+            title="PDF Preview"
+          ></iframe>
+        </div>
+      )}
 
       {selectedCourse.sections?.map((section: any) => {
         const contentType = section.type;

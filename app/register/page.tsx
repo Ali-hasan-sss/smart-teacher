@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import GradeSelect from "@/components/GradeSelect";
 
 export default function RegisterPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -166,6 +167,17 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="birthdate">{t("auth.grade")}</Label>
+              <GradeSelect
+                value={parseInt(formData.gradeId)}
+                onChange={(value) =>
+                  handleInputChange("gradeId", value.toString())
+                }
+                placeholder="اختر الصف الدراسي"
+                className="mb-4"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="birthdate">{t("auth.birthdate")}</Label>
               <Input

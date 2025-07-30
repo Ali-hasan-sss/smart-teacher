@@ -1,5 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { Download } from "lucide-react";
+import { FileText } from "lucide-react";
 import React from "react";
 
 interface SubjectCardProps {
@@ -36,10 +36,11 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onStartStudy }) => {
               <a
                 href={subject.pdfFile}
                 download
-                className="text-blue-600 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                className="text-blue-600 flex items-center gap-1 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                 title={t("courses.downloadMaterial")}
               >
-                <Download size={20} />
+                <FileText size={20} />
+                <span className="mt-1">PDF</span>
               </a>
             )}
           </div>

@@ -32,7 +32,7 @@ export default function RootLayout({
           <ReduxProvider>
             <LanguageProvider>
               <Navbar />
-              {children}
+              <div className="mt-10 pt-10">{children}</div>
             </LanguageProvider>
           </ReduxProvider>
         </ThemeProvider>

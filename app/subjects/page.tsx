@@ -21,6 +21,7 @@ export default function SubjectsList() {
   const gradeId = user?.grade?.id;
   const { t, language } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     if (gradeId) {
       dispatch(fetchSubjects({ gradeId }));
