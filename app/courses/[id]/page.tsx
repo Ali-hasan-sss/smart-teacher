@@ -46,7 +46,7 @@ export default function CourseDetailsPage() {
     .join("");
 
   return (
-    <div className={`max-w-4xl mx-auto p-6`} dir={dir}>
+    <div className={`max-w-4xl mx-auto p-6 pt-[100px] `} dir={dir}>
       <div className="flex  items-center justify-between mb-4">
         <h1 className="text-3xl font-bold ">{selectedCourse.title}</h1>
         {selectedCourse.courseFile && (

@@ -14,7 +14,7 @@ export default function LessonPlaceholder() {
   }, []);
 
   return (
-    <div className="p-10 px-4 lg:px-20 space-y-6">
+    <div className="p-10 pt-[100px]  px-4 lg:px-20 space-y-6">
       {/* عنوان الدرس */}
       <Skeleton
         height={32}

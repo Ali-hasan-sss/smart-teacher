@@ -60,7 +60,7 @@ export default function CoursesPage() {
   }, [dispatch, subjectId, currentPage, language]);
   if (loading) return <LoaderPage />;
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 pt-[100px]  px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
           {t("courses.title")}

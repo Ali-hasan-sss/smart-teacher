@@ -16,7 +16,7 @@ export default function ProfilePlaceholder() {
   const highlightColor = isDark ? "#666" : "#f5f5f5";
 
   return (
-    <div className="relative max-w-lg mx-auto mt-8 p-0 rounded-3xl shadow-xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="relative pt-[100px] max-w-lg mx-auto mt-8 p-0 rounded-3xl shadow-xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="flex flex-col items-center py-10 px-6">
         {/* صورة الملف الشخصي */}
         <div className="relative mb-4">

@@ -13,8 +13,9 @@ export default {
   },
   homePage: {
     title: "Welcome to Smart Teacher",
-    subtitle: "Learn smarter, not harder with AI-powered education",
-    startLearning: "Start Learning",
+    subtitle:
+      "An advanced educational platform that uses AI to deliver a personalized and efficient learning experience. Discover courses tailored just for you and achieve your educational goals faster ",
+    startLearning: "Start Learning Now",
     whyChoose: "Why Choose Smart Teacher?",
     description:
       "Discover a new way of learning with our intelligent teaching platform",

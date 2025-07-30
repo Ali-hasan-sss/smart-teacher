@@ -105,7 +105,7 @@ export default function AccountInfo() {
   if (!user) return null;
 
   return (
-    <div className="py-8">
+    <div className="py-8 pt-[100px] ">
       {isEditing ? (
         <AccountEditForm
           data={user}
