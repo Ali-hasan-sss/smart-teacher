@@ -9,6 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { franc } from "franc";
 import LessonPlaceholder from "@/components/loaders/LessonPlaceholder";
 import { Download, FileText } from "lucide-react";
+import { saveRecentLesson } from "@/utils/recentLessons";
 
 export default function CourseDetailsPage() {
   const { t, language } = useTranslation();
@@ -19,6 +20,17 @@ export default function CourseDetailsPage() {
     (state: RootState) => state.course
   );
   const [dir, setDir] = useState<"rtl" | "ltr">("ltr");
+
+  useEffect(() => {
+    if (selectedCourse) {
+      saveRecentLesson({
+        id: selectedCourse.id.toString(),
+        title: selectedCourse.title,
+        description: selectedCourse.description,
+        image: selectedCourse.image,
+      });
+    }
+  }, [selectedCourse]);
 
   useEffect(() => {
     const text = selectedCourse?.title || "";

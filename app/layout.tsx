@@ -1,13 +1,13 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cairo } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { LanguageProvider } from "../contexts/language-context";
 import { Navbar } from "@/components/navbar";
 import { ReduxProvider } from "@/store/ReduxProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const cairo = Cairo({ subsets: ["arabic"] });
 
 export const metadata: Metadata = {
   title: "Smart Teacher - AI Learning Platform",
@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={cairo.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

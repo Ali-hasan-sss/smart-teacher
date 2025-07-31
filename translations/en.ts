@@ -28,6 +28,7 @@ export default {
     global: "Global Access",
     globalDescription:
       "Learn from anywhere in the world with multilingual support",
+    complete: "Complete Learning",
   },
   auth: {
     loginTitle: "Login to Your Account",
@@ -63,6 +64,7 @@ export default {
     No_bookMarks: " No bookMarks Found",
     exploer: "Explore Course",
     viewPdf: "view Pdf file",
+    complete: "Complete Studing",
   },
   subjects: {
     title: "Your Subjects",

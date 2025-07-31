@@ -1,20 +1,30 @@
 "use client";
 
-import { AnimatedRobot } from "@/components/animated-robot";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { Clock, DollarSign, ScreenShare, User } from "lucide-react";
+import SearchBar from "@/components/SearchBar";
+import { useEffect, useState } from "react";
+import { getRecentLessons } from "@/utils/recentLessons";
+import CourseCard from "@/components/CourseCard";
+import { Course } from "@/types/course";
+import { AnimatedRobot } from "@/components/animated-robot";
 
 export default function HomePage() {
   const { t, language } = useTranslation();
+  const [recentLessons, setRecentLessons] = useState([]);
+
+  useEffect(() => {
+    setRecentLessons(getRecentLessons());
+  }, []);
 
   return (
     <div className="  min-h-screen">
       {/* Hero Section */}
       <section
-        className="pt-[100px] pb-10 px-4 bg-primary relative overflow-hidden px-1 md:px-20 "
+        className="pt-[100px] pb-20 px-4 bg-primary relative overflow-hidden px-1 md:px-20 "
         style={{ direction: "rtl" }}
       >
         <div className="absolute top-1/2 left-2  w-32 h-32 bg-white opacity-30 blur-xl rounded-full pointer-events-none"></div>
@@ -31,7 +41,7 @@ export default function HomePage() {
         <div className="absolute top-1/4 right-20 w-[40px] h-[40px] bg-[#3D81C2] rounded  hidden lg:flex  items-center justify-center">
           <User className="rounded-full text-white" />
         </div>
-        <div className="absolute bottom-10 right-48 w-[40px] h-[40px] bg-[#007CFF] rounded  hidden lg:flex  items-center justify-center">
+        <div className="absolute bottom-20 right-48 w-[40px] h-[40px] bg-[#007CFF] rounded  hidden lg:flex  items-center justify-center">
           <ScreenShare className="text-white" />
         </div>
 
@@ -110,13 +120,28 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+      <section className="relative flex items-center justify-center">
+        <div className=" w-full md:w-[80%] h-[200px] rounded-[40px] absolute top-[-40px] bg-[#F3F3F5] dark:bg-secondary flex flex-col items-center justify-center text-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            ابحث عن الكورس المناسب لك
+          </h2>
+          <p className="text-xs mt-1 font-bold text-gray-600 dark:text-blue-200">
+            استخدم مساعد الذكاء الاصطناعي للعثور على الكورسات المثالية{" "}
+          </p>
+          <div className="w-full  md:w-[60%]">
+            <SearchBar
+              onSearch={(val) => console.log(val)}
+              placeholder="ابحث عن دورة..."
+            />
+          </div>
+        </div>
+      </section>
       {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
+      <section className="py-20 bg-white pt-[250px] dark:bg-gray-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {t("homePage.whyChoose")}
+              {t("homePage.complete")}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               {t("homePage.description")}
@@ -124,44 +149,18 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-700">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🤖</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {t("homePage.aiPowered")}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                {t("homePage.aiDescription")}
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-700">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📚</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {t("homePage.interactive")}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                {t("homePage.interactiveDescription")}
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-700">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🌍</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {t("homePage.global")}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                {t("homePage.globalDescription")}
-              </p>
-            </div>
+            {recentLessons ? (
+              recentLessons.map((course: Course) => (
+                <CourseCard
+                  id={course.id}
+                  title={course.title}
+                  image={course.image}
+                  isComplite
+                />
+              ))
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       </section>

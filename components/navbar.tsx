@@ -79,7 +79,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="hidden md:flex items-center justify-between h-20 pt-4">
           {/* وسط القائمة داخل صندوق أبيض مدور */}
-          <div className="absolute left-1/2 top-2 w-[60vw] max-w-7xl transform -translate-x-1/2 mt-3 bg-white dark:bg-gray-800 rounded-full shadow-md flex items-center justify-between px-6 py-1">
+          <div className="absolute left-1/2 top-2 w-[60vw] max-w-7xl transform -translate-x-1/2 mt-3 bg-white dark:bg-secondary rounded-full shadow-md flex items-center justify-between px-6 py-1">
             {/* Logo and Navigation */}
             <div className="flex items-center gap-4 ">
               <Link href="/" className="flex-shrink-0">
@@ -160,7 +160,7 @@ export function Navbar() {
                 <div className="flex gap-2 rtl:flex-row-reverse">
                   <Link
                     href="/login"
-                    className={`text-sm text-center bg-blue-600 hover:bg-blue-600  text-white font-bold w-[100px] px-3 py-1 rounded-full transition ${
+                    className={`text-sm text-center bg-blue-600 hover:bg-blue-500  text-white font-bold w-[130px] px-3 py-1 rounded-full transition ${
                       pathname === "/login"
                         ? "bg-blue-500 text-white font-bold"
                         : ""

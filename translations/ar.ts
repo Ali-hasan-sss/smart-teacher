@@ -24,6 +24,7 @@ export default {
     interactiveDescription: "دورات جذابة وتفاعلية مصممة للتعلم الفعال",
     global: "وصول عالمي",
     globalDescription: "تعلم من أي مكان في العالم مع الدعم متعدد اللغات",
+    complete: "أكمل التعلم",
   },
   auth: {
     loginTitle: "تسجيل الدخول إلى حسابك",
@@ -59,6 +60,7 @@ export default {
     No_bookMarks: " لا يوجد عناصر في المحفوظات",
     exploer: "تصفح الدروس",
     viewPdf: "عرض الملف",
+    complete: "أكمل الدراسة",
   },
   subjects: {
     title: "المواد الدراسية",

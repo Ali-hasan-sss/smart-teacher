@@ -33,7 +33,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 210, 9%, 9%, 0.962;
     --primary-foreground: 222.2 84% 4.9%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -91,5 +91,5 @@
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: dash 2s linear forwards infinite;
-  color: hsla(213, 61%, 53%, 1);
+  color: hsla(210, 9%, 9%, 0.962);
 }
