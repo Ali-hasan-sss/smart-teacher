@@ -18,12 +18,9 @@ export const fetchCourses = createAsyncThunk<
 >("course/fetchCourses", async (params, thunkAPI) => {
   try {
     const response = await axios.get(
-      "/api/Client/Course?IncludeBookmark=true",
+      "/api/Client/Course/List?IncludeBookmark=true",
       {
         params,
-        headers: {
-          "Accept-Language": "en",
-        },
       }
     );
 
@@ -39,13 +36,26 @@ export const fetchCourseById = createAsyncThunk<SingleCourseResponse, number>(
   "course/fetchCourseById",
   async (id) => {
     const response = await axios.get<SingleCourseResponse>(
-      `/api/Client/Course/${id}`,
-      {
-        headers: {
-          "Accept-Language": "en",
-        },
-      }
+      `/api/Client/Course/${id}`
     );
     return response.data;
+  }
+);
+
+export const markActivition = createAsyncThunk(
+  "courses/addActivition",
+  async (
+    activityData: { courseId: Number; duration: Number },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axios.post(
+        "/api/Client/Course/Activity",
+        activityData
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
   }
 );

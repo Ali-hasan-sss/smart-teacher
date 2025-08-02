@@ -1,6 +1,6 @@
 // src/store/course/courseSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { fetchCourses, fetchCourseById } from "./courseThunks";
+import { fetchCourses, fetchCourseById, markActivition } from "./courseThunks";
 import { Course, CourseResponse } from "@/types/course";
 
 interface CourseState {

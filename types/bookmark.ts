@@ -35,6 +35,7 @@ export interface Bookmark {
   enableAI: boolean;
   type: string;
   sections: Section[];
+  duration: number;
 }
 
 export interface BookmarkResponse {

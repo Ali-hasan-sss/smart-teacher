@@ -25,6 +25,9 @@ export default {
     global: "وصول عالمي",
     globalDescription: "تعلم من أي مكان في العالم مع الدعم متعدد اللغات",
     complete: "أكمل التعلم",
+    complete_description: "تابع دروسك الأخيرة مباشرة",
+    recommended: "دروس موصى بها",
+    recommended_description: "استكشف احدث الدروس الموصى بها",
   },
   auth: {
     loginTitle: "تسجيل الدخول إلى حسابك",

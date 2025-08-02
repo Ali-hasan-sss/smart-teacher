@@ -1,10 +1,12 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
+import { Bookmark, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
+import { Progress } from "./ui/progress";
+import { formatDuration } from "@/utils/formatDuration";
 
 interface CourseCardProps {
   id: number;
@@ -14,6 +16,8 @@ interface CourseCardProps {
   onToggleBookmark?: (courseId: number) => void;
   toggleLoading?: boolean;
   isComplite?: boolean;
+  duration: number;
+  totalDuration?: number;
 }
 
 export default function CourseCard({
@@ -23,14 +27,17 @@ export default function CourseCard({
   isBookmarked,
   isComplite,
   onToggleBookmark,
+  duration,
+  totalDuration = 30 * 60,
 }: CourseCardProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const { bookmarks, loading, error, toggleLoading } = useSelector(
-    (state: RootState) => state.bookmark
-  );
+  const { toggleLoading } = useSelector((state: RootState) => state.bookmark);
+  const progressPercent = (duration / totalDuration) * 100;
+
+  const totaltext = formatDuration(totalDuration, "ar");
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md  relative">
+    <div className="bg-white pb-1 dark:bg-gray-800 rounded-lg shadow-md  relative">
       {image && (
         <img
           src={image}
@@ -42,6 +49,27 @@ export default function CourseCard({
       <h3 className="text-xl px-4 font-semibold mb-2">
         {title || "عنوان غير متوفر"}
       </h3>
+      {typeof progressPercent === "number" && (
+        <div className="px-4 mb-2">
+          {progressPercent > 0 ? (
+            <Progress value={progressPercent} />
+          ) : (
+            <div className="h-4 rounded-full bg-transparent opacity-0 pointer-events-none" />
+          )}
+        </div>
+      )}
+
+      {typeof progressPercent === "number" && (
+        <div className="px-4 mb-2">
+          {totalDuration > 0 ? (
+            <div className="flex items-center gap-2">
+              <Timer /> <p>{totaltext}</p>
+            </div>
+          ) : (
+            <div className="h-4 rounded-full bg-transparent opacity-0 pointer-events-none" />
+          )}
+        </div>
+      )}
 
       <div className="flex items-center px-4 justify-between my-3">
         <div

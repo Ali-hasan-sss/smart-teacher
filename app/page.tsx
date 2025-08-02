@@ -9,16 +9,46 @@ import SearchBar from "@/components/SearchBar";
 import { useEffect, useState } from "react";
 import { getRecentLessons } from "@/utils/recentLessons";
 import CourseCard from "@/components/CourseCard";
-import { Course } from "@/types/course";
+import { Course, FetchCoursesParams } from "@/types/course";
 import { AnimatedRobot } from "@/components/animated-robot";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { getRecommendedCourses } from "@/utils/RecommendedCourses";
+import { AppDispatch, RootState } from "@/store";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { fetchCourses } from "@/store/course/courseThunks";
+import LoaderCard from "@/components/loaders/LoaderCard";
+import SearchCTA from "@/components/Cta/searchCTA";
 
 export default function HomePage() {
   const { t, language } = useTranslation();
+  const dispatch = useDispatch<AppDispatch>();
   const [recentLessons, setRecentLessons] = useState([]);
+  const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
+
+  const { courses, loading } = useSelector((state: RootState) => state.course);
 
   useEffect(() => {
-    setRecentLessons(getRecentLessons());
-  }, []);
+    const pageParams: FetchCoursesParams = {
+      pageNumber: 1,
+      pageSize: 25,
+    };
+
+    dispatch(fetchCourses(pageParams));
+  }, [dispatch, language]);
+  useEffect(() => {
+    const recent = getRecentLessons();
+    setRecentLessons(recent);
+
+    const recommended = getRecommendedCourses(courses);
+    setRecommendedCourses(recommended);
+  }, [courses]);
 
   return (
     <div className="  min-h-screen">
@@ -120,23 +150,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <section className="relative flex items-center justify-center">
-        <div className=" w-full md:w-[80%] h-[200px] rounded-[40px] absolute top-[-40px] bg-[#F3F3F5] dark:bg-secondary flex flex-col items-center justify-center text-center gap-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            ابحث عن الكورس المناسب لك
-          </h2>
-          <p className="text-xs mt-1 font-bold text-gray-600 dark:text-blue-200">
-            استخدم مساعد الذكاء الاصطناعي للعثور على الكورسات المثالية{" "}
-          </p>
-          <div className="w-full  md:w-[60%]">
-            <SearchBar
-              onSearch={(val) => console.log(val)}
-              placeholder="ابحث عن دورة..."
-            />
-          </div>
-        </div>
-      </section>
-      {/* Features Section */}
+      <SearchCTA />
+      {/* complete Section */}
       <section className="py-20 bg-white pt-[250px] dark:bg-gray-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -144,23 +159,73 @@ export default function HomePage() {
               {t("homePage.complete")}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              {t("homePage.description")}
+              {t("homePage.complete_description")}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {recentLessons ? (
-              recentLessons.map((course: Course) => (
-                <CourseCard
-                  id={course.id}
-                  title={course.title}
-                  image={course.image}
-                  isComplite
-                />
-              ))
-            ) : (
-              <></>
-            )}
+          <div className="relative w-full">
+            <Carousel className="w-full overflow-hidden" dir="ltr">
+              <CarouselContent className="overflow-visible">
+                {recentLessons?.map((course: Course) => (
+                  <CarouselItem
+                    key={course.id}
+                    className="md:basis-1/2 lg:basis-1/3"
+                  >
+                    <CourseCard
+                      id={course.id}
+                      title={course.title}
+                      image={course.image}
+                      isComplite
+                      duration={course.duration}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+            </Carousel>
+          </div>
+        </div>
+      </section>
+      {/* recommended Section */}
+      <section className="py-20 bg-peimary ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {t("homePage.recommended")}
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              {t("homePage.recommended_description")}
+            </p>
+          </div>
+
+          <div className="relative w-full">
+            <Carousel className="w-full overflow-hidden" dir="ltr">
+              <CarouselContent className="overflow-visible">
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <LoaderCard key={index} />
+                    ))
+                  : recommendedCourses?.map((course: Course) => (
+                      <CarouselItem
+                        key={course.id}
+                        className="md:basis-1/2 lg:basis-1/3"
+                      >
+                        <CourseCard
+                          id={course.id}
+                          title={course.title}
+                          image={course.image}
+                          duration={course.duration}
+                        />
+                      </CarouselItem>
+                    ))}
+              </CarouselContent>
+
+              {/* أزرار التنقل */}
+              <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+            </Carousel>
           </div>
         </div>
       </section>

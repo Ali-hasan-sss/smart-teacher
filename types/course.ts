@@ -1,4 +1,10 @@
 // src/types/course.ts
+export interface FetchCoursesParams {
+  pageNumber: number;
+  pageSize: number;
+  subjectId?: number;
+}
+
 export interface CourseTitle {
   en?: string;
   ar?: string;
@@ -29,6 +35,7 @@ export interface Course {
   updatedAt: string;
   type: string;
   sections?: Section[];
+  duration: number;
 }
 
 export interface CourseResponse {

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { fetchCourseById } from "@/store/course/courseThunks";
+import { fetchCourseById, markActivition } from "@/store/course/courseThunks";
 import { useTranslation } from "@/hooks/useTranslation";
 import { franc } from "franc";
 import LessonPlaceholder from "@/components/loaders/LessonPlaceholder";
-import { Download, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { saveRecentLesson } from "@/utils/recentLessons";
+import { markCourseAsViewed } from "@/utils/RecommendedCourses";
+import { useCourseActivityTracker } from "@/hooks/useCourseActivity";
 
 export default function CourseDetailsPage() {
   const { t, language } = useTranslation();
@@ -28,7 +30,9 @@ export default function CourseDetailsPage() {
         title: selectedCourse.title,
         description: selectedCourse.description,
         image: selectedCourse.image,
+        duration: selectedCourse.duration,
       });
+      markCourseAsViewed(selectedCourse.id.toString());
     }
   }, [selectedCourse]);
 
@@ -42,11 +46,14 @@ export default function CourseDetailsPage() {
       setDir("ltr");
     }
   }, [selectedCourse]);
+
   useEffect(() => {
     if (id) {
       dispatch(fetchCourseById(Number(id)));
     }
   }, [dispatch, id, language]);
+
+  useCourseActivityTracker(selectedCourse);
 
   if (loading) return <LessonPlaceholder />;
   if (error) return <p className="text-red-500">{error}</p>;

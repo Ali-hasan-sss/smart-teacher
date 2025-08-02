@@ -50,6 +50,7 @@ export default function BookmarkList() {
             image={bookmark.image}
             isBookmarked={true}
             onToggleBookmark={handleRemove}
+            duration={bookmark.duration}
           />
         ))}
       </div>

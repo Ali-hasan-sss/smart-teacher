@@ -9,12 +9,8 @@ import { addBookmark, removeBookmark } from "@/store/bookmark/bookmarkThunks";
 import CourseCard from "@/components/CourseCard";
 import PaginationComponent from "@/components/pagination";
 import LoaderPage from "@/components/loaders/LoaderPage";
+import { FetchCoursesParams } from "@/types/course";
 
-interface FetchCoursesParams {
-  pageNumber: number;
-  pageSize: number;
-  subjectId?: number;
-}
 export default function CoursesPage() {
   const { t, language } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
@@ -58,6 +54,7 @@ export default function CoursesPage() {
 
     dispatch(fetchCourses(pageParams));
   }, [dispatch, subjectId, currentPage, language]);
+
   if (loading) return <LoaderPage />;
   return (
     <div className="min-h-screen py-12 pt-[100px]  px-4 sm:px-6 lg:px-8">
@@ -79,6 +76,7 @@ export default function CoursesPage() {
                 title={course.title || "عنوان غير متوفر"}
                 isBookmarked={course.bookmarked}
                 onToggleBookmark={toggleBookmark}
+                duration={course.duration}
               />
             ))}
         </div>

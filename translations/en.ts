@@ -29,6 +29,9 @@ export default {
     globalDescription:
       "Learn from anywhere in the world with multilingual support",
     complete: "Complete Learning",
+    complete_description: "Complete Learning",
+    recommended: "recommended Courses",
+    recommended_description: "recommended Courses",
   },
   auth: {
     loginTitle: "Login to Your Account",
@@ -64,7 +67,7 @@ export default {
     No_bookMarks: " No bookMarks Found",
     exploer: "Explore Course",
     viewPdf: "view Pdf file",
-    complete: "Complete Studing",
+    complete: "Continue Learning",
   },
   subjects: {
     title: "Your Subjects",
