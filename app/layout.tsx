@@ -6,6 +6,7 @@ import "./globals.css";
 import { LanguageProvider } from "../contexts/language-context";
 import { Navbar } from "@/components/navbar";
 import { ReduxProvider } from "@/store/ReduxProvider";
+import Footer from "@/components/footer";
 
 const cairo = Cairo({ subsets: ["arabic"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             <LanguageProvider>
               <Navbar />
               <div className="">{children}</div>
+              <Footer />
             </LanguageProvider>
           </ReduxProvider>
         </ThemeProvider>

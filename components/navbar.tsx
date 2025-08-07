@@ -85,10 +85,10 @@ export function Navbar() {
               <Link href="/" className="flex-shrink-0">
                 <Image
                   src="/images/logo.png"
-                  width={40}
-                  height={40}
+                  width={60}
+                  height={60}
                   alt="smart teacher"
-                  className="bg-gray-100 rounded-full "
+                  className=""
                 />
               </Link>
               <div className="flex items-center gap-2 ">
@@ -119,7 +119,7 @@ export function Navbar() {
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition"
                   >
-                    <Avatar className="w-7 h-7">
+                    <Avatar className="w-8 h-8">
                       <AvatarImage src={user.image} alt={user.firstName} />
                       <AvatarFallback>
                         {user.firstName?.[0] || "U"}
@@ -204,15 +204,15 @@ export function Navbar() {
         <Link href="/">
           <Image
             src={"/images/logo.png"}
-            width={36}
-            height={36}
+            width={50}
+            height={50}
             alt="smart teacher"
           />
         </Link>
         <div className="flex items-center gap-2">
           {IsLoggedIn ? (
             user && user.image ? (
-              <Avatar className="w-6 h-6">
+              <Avatar className="w-8 h-8">
                 <AvatarImage src={user.image} alt={user.firstName} />
                 <AvatarFallback>{user.firstName?.[0] || "U"}</AvatarFallback>
               </Avatar>
@@ -227,7 +227,7 @@ export function Navbar() {
             size="icon"
             onClick={() => setIsOpen(!isOpen)}
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="h-8 w-8" /> : <Menu className="h-8 w-8" />}
           </Button>
         </div>
       </div>

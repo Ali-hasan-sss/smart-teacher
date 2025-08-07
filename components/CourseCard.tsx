@@ -12,32 +12,55 @@ interface CourseCardProps {
   id: number;
   image?: string;
   title: string;
+  description: string;
   isBookmarked?: boolean;
   onToggleBookmark?: (courseId: number) => void;
   toggleLoading?: boolean;
-  isComplite?: boolean;
   duration: number;
-  totalDuration?: number;
+  courseDuration: number;
 }
 
 export default function CourseCard({
   id,
   image,
   title,
+  description,
   isBookmarked,
-  isComplite,
   onToggleBookmark,
   duration,
-  totalDuration = 30 * 60,
+  courseDuration,
 }: CourseCardProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { toggleLoading } = useSelector((state: RootState) => state.bookmark);
-  const progressPercent = (duration / totalDuration) * 100;
 
-  const totaltext = formatDuration(totalDuration, "ar");
+  let progressPercent = 0;
+  let isComplete = false;
+
+  if (
+    typeof duration === "number" &&
+    typeof courseDuration === "number" &&
+    courseDuration > 0
+  ) {
+    if (duration >= courseDuration) {
+      progressPercent = 1;
+      isComplete = true;
+    } else {
+      progressPercent = duration / courseDuration;
+    }
+  }
+
+  const totaltext = formatDuration(courseDuration, language);
+  const descriptionBlocks = JSON.parse(description || "[]");
+  const descriptionText = descriptionBlocks
+    .map((block: any) => block.insert)
+    .join("");
   return (
-    <div className="bg-white pb-1 dark:bg-gray-800 rounded-lg shadow-md  relative">
+    <div
+      className="bg-white overflow-hidden pb-1 dark:bg-gray-800 rounded-[40px] shadow-md relative cursor-pointer transform transition-transform duration-300 hover:scale-[1.02]"
+      onClick={() => router.push(`/courses/${id}`)}
+      title={isComplete ? t("courses.complete") : t("courses.startLearning")}
+    >
       {image && (
         <img
           src={image}
@@ -49,10 +72,14 @@ export default function CourseCard({
       <h3 className="text-xl px-4 font-semibold mb-2">
         {title || "عنوان غير متوفر"}
       </h3>
-      {typeof progressPercent === "number" && (
+      <p className="text-lg text-gray-500 px-4 font-semibold mb-2 truncate whitespace-nowrap overflow-hidden">
+        {descriptionText || "وصف غير متوفر"}
+      </p>
+
+      {typeof courseDuration === "number" && (
         <div className="px-4 mb-2">
-          {progressPercent > 0 ? (
-            <Progress value={progressPercent} />
+          {courseDuration > 0 ? (
+            <Progress value={progressPercent * 100} />
           ) : (
             <div className="h-4 rounded-full bg-transparent opacity-0 pointer-events-none" />
           )}
@@ -61,7 +88,7 @@ export default function CourseCard({
 
       {typeof progressPercent === "number" && (
         <div className="px-4 mb-2">
-          {totalDuration > 0 ? (
+          {courseDuration > 0 ? (
             <div className="flex items-center gap-2">
               <Timer /> <p>{totaltext}</p>
             </div>
@@ -71,21 +98,21 @@ export default function CourseCard({
         </div>
       )}
 
-      <div className="flex items-center px-4 justify-between my-3">
-        <div
-          onClick={() => router.push(`/courses/${id}`)}
-          className="bg-blue-600 w-full text-center text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700"
-        >
-          {isComplite ? t("courses.complete") : t("courses.startLearning")}
-        </div>
+      <div className="flex items-center absolute top-0 left-0 px-4 justify-between my-3">
         {onToggleBookmark && (
           <button
-            onClick={() => onToggleBookmark(id)}
-            className="mr-2 text-blue-600 relative w-[40px] h-[40px] flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(id);
+            }}
+            className="mr-2 text-blue-600 relative w-[40px] h-[40px] flex items-center justify-center 
+                    rounded-full transition-all duration-300 
+                    hover:bg-blue-100 dark:hover:bg-blue-900 
+                    cursor-default"
             title={
               isBookmarked
-                ? t("courses.save_bookMark")
-                : t("courses.remove_bookMark")
+                ? t("courses.remove_bookMark")
+                : t("courses.save_bookMark")
             }
           >
             <div className="w-[35px] h-[35px] flex items-center justify-center">

@@ -67,25 +67,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
         />
 
         {loading ? (
-          <div className="absolute top-5 w-8 h-8 left-2 text-white dark:text-white">
+          <div className="absolute top-5 w-8 h-8 left-2 text-gray-700 dark:text-white">
             <Loader className="h-4 w-4 animate-spin" />
           </div>
-        ) : showDropdown ? (
-          <Button
-            type="button"
-            onClick={handleClear}
-            className="absolute top-3 w-8 h-8 left-2 text-white dark:text-white hover:text-gray-900"
-          >
-            <X />
-          </Button>
         ) : (
-          <Button
-            type="submit"
-            className="absolute top-3 h-8 left-2 text-white dark:text-white hover:text-gray-900"
-          >
-            <Search className="mr-2" />
-            {buttonLabel}
-          </Button>
+          <div className="absolute top-3 left-1 flex items-center gap-1">
+            {showDropdown && (
+              <Button
+                type="button"
+                onClick={handleClear}
+                className="w-8 h-8 rounded-full bg-transparen text-gray-700 dark:text-white hover:text-gray-900"
+              >
+                <X />
+              </Button>
+            )}
+            <Button
+              type="submit"
+              className=" h-8 rounded-full bg-primary dark:bg-blue-700  dark:hover:bg-transparent text-white dark:text-white hover:text-gray-900"
+            >
+              <Search className="mr-2" />
+              {buttonLabel}
+            </Button>
+          </div>
         )}
       </form>
 

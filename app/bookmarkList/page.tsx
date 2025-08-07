@@ -49,8 +49,10 @@ export default function BookmarkList() {
             title={bookmark.title}
             image={bookmark.image}
             isBookmarked={true}
+            description={bookmark.description}
             onToggleBookmark={handleRemove}
             duration={bookmark.duration}
+            courseDuration={bookmark.courseDuration || 30 * 60}
           />
         ))}
       </div>

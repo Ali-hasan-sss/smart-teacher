@@ -74,9 +74,11 @@ export default function CoursesPage() {
                 id={course.id}
                 image={course.image}
                 title={course.title || "عنوان غير متوفر"}
+                description={course.description || "وصف غير متوفر"}
                 isBookmarked={course.bookmarked}
                 onToggleBookmark={toggleBookmark}
                 duration={course.duration}
+                courseDuration={course.courseDuration || 30 * 60}
               />
             ))}
         </div>

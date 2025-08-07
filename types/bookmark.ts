@@ -36,6 +36,7 @@ export interface Bookmark {
   type: string;
   sections: Section[];
   duration: number;
+  courseDuration: number | null;
 }
 
 export interface BookmarkResponse {

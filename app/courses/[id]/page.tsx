@@ -12,6 +12,8 @@ import { FileText } from "lucide-react";
 import { saveRecentLesson } from "@/utils/recentLessons";
 import { markCourseAsViewed } from "@/utils/RecommendedCourses";
 import { useCourseActivityTracker } from "@/hooks/useCourseActivity";
+import CourseEntray from "@/components/courseIntray";
+import { removeBookmark } from "@/store/bookmark/bookmarkThunks";
 
 export default function CourseDetailsPage() {
   const { t, language } = useTranslation();
@@ -22,6 +24,7 @@ export default function CourseDetailsPage() {
     (state: RootState) => state.course
   );
   const [dir, setDir] = useState<"rtl" | "ltr">("ltr");
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -53,7 +56,7 @@ export default function CourseDetailsPage() {
     }
   }, [dispatch, id, language]);
 
-  useCourseActivityTracker(selectedCourse);
+  useCourseActivityTracker(selectedCourse, started);
 
   if (loading) return <LessonPlaceholder />;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -64,9 +67,21 @@ export default function CourseDetailsPage() {
     .map((block: any) => block.insert)
     .join("");
 
+  if (!started) {
+    return (
+      <CourseEntray
+        onStart={() => setStarted(true)}
+        selectedCourse={selectedCourse}
+        dir={dir}
+        descriptionText={descriptionText}
+        isbookMark={selectedCourse.bookmarked}
+      />
+    );
+  }
+
   return (
-    <div className={`max-w-4xl mx-auto p-6 pt-[100px] `} dir={dir}>
-      <div className="flex  items-center justify-between mb-4">
+    <div className={`max-w-4xl mx-auto p-6 pt-[150px] `} dir={dir}>
+      <div className="flex  items-center justify-between mb-8">
         <h1 className="text-3xl font-bold ">{selectedCourse.title}</h1>
         {selectedCourse.courseFile && (
           <a

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { Clock, DollarSign, ScreenShare, User } from "lucide-react";
-import SearchBar from "@/components/SearchBar";
 import { useEffect, useState } from "react";
 import { getRecentLessons } from "@/utils/recentLessons";
 import CourseCard from "@/components/CourseCard";
@@ -25,6 +24,7 @@ import { useSelector } from "react-redux";
 import { fetchCourses } from "@/store/course/courseThunks";
 import LoaderCard from "@/components/loaders/LoaderCard";
 import SearchCTA from "@/components/Cta/searchCTA";
+import CTA from "@/components/Cta/CTA";
 
 export default function HomePage() {
   const { t, language } = useTranslation();
@@ -143,9 +143,9 @@ export default function HomePage() {
 
             {/* Right Side - 3D Robot */}
             <div className="flex justify-center lg:justify-end rtl:lg:justify-start">
-              <div className="w-full max-w-md">
+              {/* <div className="w-full max-w-md">
                 <AnimatedRobot />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -175,8 +175,9 @@ export default function HomePage() {
                       id={course.id}
                       title={course.title}
                       image={course.image}
-                      isComplite
                       duration={course.duration}
+                      courseDuration={course.courseDuration || 30 * 60}
+                      description={course.description}
                     />
                   </CarouselItem>
                 ))}
@@ -217,6 +218,8 @@ export default function HomePage() {
                           title={course.title}
                           image={course.image}
                           duration={course.duration}
+                          courseDuration={course.courseDuration || 30 * 60}
+                          description={course.description}
                         />
                       </CarouselItem>
                     ))}
@@ -229,6 +232,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      <div className="py-10 mb-10 px-1 md:px-10 text-white">
+        <CTA />
+      </div>
     </div>
   );
 }
