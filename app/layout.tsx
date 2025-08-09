@@ -23,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={cairo.className}>
+      <body className={`${cairo.className} bg-white dark:bg-secondary`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -33,7 +33,7 @@ export default function RootLayout({
           <ReduxProvider>
             <LanguageProvider>
               <Navbar />
-              <div className="">{children}</div>
+              <div className="min-h-[80vh]">{children}</div>
               <Footer />
             </LanguageProvider>
           </ReduxProvider>

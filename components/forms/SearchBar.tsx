@@ -11,12 +11,18 @@ interface SearchBarProps {
   placeholder?: string;
   buttonLabel?: string;
   className?: string;
+  isSubject?: boolean;
+  subjectId?: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  api = "api/Client/Course?IncludeBookmark=true&title=",
+  subjectId,
+  api = `api/Client/Course?IncludeBookmark=true${
+    subjectId ? `&subjectId=${subjectId}` : ""
+  }&title=`,
   placeholder = "Search...",
   buttonLabel = "Search",
+  isSubject = false,
   className,
 }) => {
   const [query, setQuery] = useState("");
@@ -45,8 +51,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const onSelectResult = (id: string) => {
-    router.push(`courses/${id}`);
-    setShowDropdown(false); // إغلاق القائمة بعد التنقل
+    if (isSubject) localStorage.setItem("selectedSubject", id);
+    router.push(`${isSubject ? `courses` : `courses/${id}`}`);
+    setShowDropdown(false);
   };
 
   const handleClear = () => {

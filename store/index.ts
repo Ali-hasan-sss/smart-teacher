@@ -5,6 +5,7 @@ import bookmarkReducer from "./bookmark/bookmarkSlice";
 import courseReducer from "./course/courseSlice";
 import accountReducer from "./account/accountSlice";
 import subjectReducer from "./subject/subjectSlice";
+import conversationReducer from "./conversation/conversationSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
     course: courseReducer,
     account: accountReducer,
     subjects: subjectReducer,
+    conversation: conversationReducer,
   },
 });
 

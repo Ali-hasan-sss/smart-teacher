@@ -15,11 +15,11 @@ export interface Section {
   title: string;
   order: number;
   courseId: number;
-  course: Course;
   type: string;
   content: string;
   createdAt: string;
   updatedAt: string;
+  course: Course;
 }
 
 export interface Course {
@@ -37,7 +37,7 @@ export interface Course {
   type: string;
   sections?: Section[];
   duration: number;
-  courseDuration: number;
+  courseDuration: number | null;
 }
 
 export interface CourseResponse {

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Clock, DollarSign, ScreenShare, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getRecentLessons } from "@/utils/recentLessons";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { Course, FetchCoursesParams } from "@/types/course";
 import { AnimatedRobot } from "@/components/animated-robot";
 import {
@@ -25,6 +25,7 @@ import { fetchCourses } from "@/store/course/courseThunks";
 import LoaderCard from "@/components/loaders/LoaderCard";
 import SearchCTA from "@/components/Cta/searchCTA";
 import CTA from "@/components/Cta/CTA";
+import HowItWork from "@/components/howItWork";
 
 export default function HomePage() {
   const { t, language } = useTranslation();
@@ -143,16 +144,16 @@ export default function HomePage() {
 
             {/* Right Side - 3D Robot */}
             <div className="flex justify-center lg:justify-end rtl:lg:justify-start">
-              {/* <div className="w-full max-w-md">
+              <div className="w-full max-w-md hidden md:block">
                 <AnimatedRobot />
-              </div> */}
+              </div>
             </div>
           </div>
         </div>
       </section>
       <SearchCTA />
       {/* complete Section */}
-      <section className="py-20 bg-white pt-[250px] dark:bg-gray-500">
+      <section className="py-20 bg-white dark:bg-secondary pt-[250px] ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -190,7 +191,7 @@ export default function HomePage() {
         </div>
       </section>
       {/* recommended Section */}
-      <section className="py-20 bg-peimary ">
+      <section className="py-20 bg-white dark:bg-secondary ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -232,9 +233,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <div className="py-10 mb-10 px-1 md:px-10 text-white">
+      <div className="py-10 bg-white dark:bg-secondary  px-1 md:px-10 text-white">
         <CTA />
       </div>
+      <HowItWork />
     </div>
   );
 }

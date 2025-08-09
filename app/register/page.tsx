@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import GradeSelect from "@/components/GradeSelect";
+import GradeSelect from "@/components/forms/GradeSelect";
 
 export default function RegisterPage() {
   const dispatch = useDispatch<AppDispatch>();

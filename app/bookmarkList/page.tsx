@@ -8,7 +8,7 @@ import {
   removeBookmark,
 } from "@/store/bookmark/bookmarkThunks";
 import { useRouter } from "next/navigation";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import LoaderPage from "@/components/loaders/LoaderPage";
 import { useTranslation } from "@/hooks/useTranslation";
 

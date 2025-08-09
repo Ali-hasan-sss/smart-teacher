@@ -3,8 +3,8 @@
 import SearchCTA from "@/components/Cta/searchCTA";
 import LoaderPage from "@/components/loaders/LoaderPage";
 import PaginationComponent from "@/components/pagination";
-import SearchBar from "@/components/SearchBar";
-import SubjectCard from "@/components/SubjectCard";
+import SearchBar from "@/components/forms/SearchBar";
+import SubjectCard from "@/components/cards/SubjectCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RootState } from "@/store";
 import { useAppDispatch } from "@/store/hooks";
@@ -45,7 +45,7 @@ export default function SubjectsList() {
           <h1 className="text-3xl w-full md:w-1/3 font-bold mt-5 text-gray-900 dark:text-white mb-8">
             {t("subjects.title")}
           </h1>
-          <SearchBar />
+          <SearchBar api="/api/Client/Subject?&title=" isSubject />
         </div>
         {loading && <p>Loading...</p>}
         {error && <p className="text-red-600 mb-4">{error}</p>}

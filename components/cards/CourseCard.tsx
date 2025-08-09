@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
-import { Progress } from "./ui/progress";
+import { Progress } from "../ui/progress";
 import { formatDuration } from "@/utils/formatDuration";
 
 interface CourseCardProps {
@@ -57,7 +57,7 @@ export default function CourseCard({
     .join("");
   return (
     <div
-      className="bg-white overflow-hidden pb-1 dark:bg-gray-800 rounded-[40px] shadow-md relative cursor-pointer transform transition-transform duration-300 hover:scale-[1.02]"
+      className="bg-third overflow-hidden pb-1  rounded-[40px] shadow-md relative cursor-pointer transform transition-transform duration-300 hover:scale-[1.02]"
       onClick={() => router.push(`/courses/${id}`)}
       title={isComplete ? t("courses.complete") : t("courses.startLearning")}
     >

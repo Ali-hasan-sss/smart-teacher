@@ -1,5 +1,5 @@
 "use client";
-import AccountEditForm from "@/components/AccountEditForm";
+import AccountEditForm from "@/components/forms/AccountEditForm";
 import AccountView from "@/components/AccountView";
 import { RootState } from "@/store";
 import {
