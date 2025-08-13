@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Timer } from "lucide-react";
+import { Bookmark, FileText, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RootState } from "@/store";
@@ -18,6 +18,7 @@ interface CourseCardProps {
   toggleLoading?: boolean;
   duration: number;
   courseDuration: number;
+  courseFile?: string;
 }
 
 export default function CourseCard({
@@ -26,6 +27,7 @@ export default function CourseCard({
   title,
   description,
   isBookmarked,
+  courseFile,
   onToggleBookmark,
   duration,
   courseDuration,
@@ -68,10 +70,23 @@ export default function CourseCard({
           className="w-full h-48 object-cover  rounded mb-4"
         />
       )}
-
-      <h3 className="text-xl px-4 font-semibold mb-2">
-        {title || "عنوان غير متوفر"}
-      </h3>
+      <div className="flex items-center px-4 justify-between mb-2">
+        <h3 className="text-xl font-semibold ">{title || "عنوان غير متوفر"}</h3>
+        {courseFile && (
+          <a
+            href={courseFile}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-blue-600 flex items-center gap-1 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            title={t("courses.downloadMaterial")}
+          >
+            <FileText size={20} />
+            <span className="mt-1">PDF</span>
+          </a>
+        )}
+      </div>
       <p className="text-lg text-gray-500 px-4 font-semibold mb-2 truncate whitespace-nowrap overflow-hidden">
         {descriptionText || "وصف غير متوفر"}
       </p>

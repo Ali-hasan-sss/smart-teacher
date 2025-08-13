@@ -28,6 +28,9 @@ const config: Config = {
           DEFAULT: "hsla(var(--third))",
           foreground: "hsl(var(--third-foreground))",
         },
+        title: {
+          DEFAULT: "hsla(var(--title))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",

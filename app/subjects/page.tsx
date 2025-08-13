@@ -41,11 +41,13 @@ export default function SubjectsList() {
   return (
     <div className="min-h-screen pt-[100px] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-3 py-5  items-center">
-          <h1 className="text-3xl w-full md:w-1/3 font-bold mt-5 text-gray-900 dark:text-white mb-8">
+        <div className="flex flex-col md:flex-row gap-3 py-5 md:justify-between mb-8  items-center">
+          <h1 className="text-3xl w-full md:w-1/3 font-bold  text-gray-900 dark:text-white ">
             {t("subjects.title")}
           </h1>
-          <SearchBar api="/api/Client/Subject?&title=" isSubject />
+          <div className="flex items-center justify-center w-full md:w-1/2 px-2 md:px-5">
+            <SearchBar api="/api/Client/Subject?&title=" isSubject />
+          </div>
         </div>
         {loading && <p>Loading...</p>}
         {error && <p className="text-red-600 mb-4">{error}</p>}

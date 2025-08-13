@@ -1,3 +1,5 @@
+import { Grade } from "./grade";
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -37,12 +39,6 @@ export interface AuthContextType {
     userData: RegisterRequest
   ) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
-}
-export interface Grade {
-  id: number;
-  createdAt: string;
-  updatedAt: string | null;
-  title: string;
 }
 
 export interface AccountData {

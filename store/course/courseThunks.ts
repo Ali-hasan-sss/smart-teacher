@@ -18,7 +18,7 @@ export const fetchCourses = createAsyncThunk<
 >("course/fetchCourses", async (params, thunkAPI) => {
   try {
     const response = await axios.get(
-      "/api/Client/Course/List?IncludeBookmark=true",
+      "/api/Client/Course?IncludeBookmark=true",
       {
         params,
       }

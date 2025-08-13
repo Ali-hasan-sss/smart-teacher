@@ -93,7 +93,7 @@ export default function CourseEntray({
                             القسم {index + 1}:
                           </span>{" "}
                           <span className="italic">
-                            العنوان :{section.title}
+                            العنوان :{section.title || "--------"}
                           </span>
                           <span className="italic">
                             {" "}

@@ -9,7 +9,7 @@ export default function Footer() {
   const fastLinks = [
     { label: "الرئيسية", path: "/" },
     { label: "الدورات", path: "/courses" },
-    { label: "من نحن", path: "/about" },
+    { label: "من نحن", path: "/about-us" },
   ];
   const supportLink = [
     { label: "تواصل معنا", path: "/contact" },

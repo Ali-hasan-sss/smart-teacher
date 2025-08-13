@@ -1,5 +1,5 @@
 // src/lib/axios.ts
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 
 const API_BASE_URL =
@@ -10,7 +10,6 @@ const instance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// 🪪 إضافة Authorization من الكوكيز
 instance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("token");
@@ -27,42 +26,74 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
 instance.interceptors.response.use(
   (res) => res,
   async (err) => {
     const originalRequest = err.config;
     const refreshToken = Cookies.get("refreshToken");
 
+    // لا تحاول تعمل refresh إذا كان الخطأ من طلب الـ refresh نفسه
+    if (originalRequest.url?.includes("/api/Client/Account/Refresh")) {
+      return Promise.reject(err);
+    }
+
     if (
       err.response?.status === 401 &&
       !originalRequest._retry &&
       refreshToken
     ) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          refreshSubscribers.push((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(instance(originalRequest));
+          });
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         const res = await axios.post(
           `${API_BASE_URL}/api/Client/Account/Refresh`,
-          {
-            refreshToken,
-          }
+          { refreshToken }
         );
 
         const newToken = res.data.data.token.accessToken;
         const newRefreshToken = res.data.data.token.refreshTokenValue;
 
-        Cookies.set("token", newToken, { secure: true });
-        Cookies.set("refreshToken", newRefreshToken, { secure: true });
+        Cookies.set("token", newToken, { secure: true, sameSite: "Strict" });
+        Cookies.set("refreshToken", newRefreshToken, {
+          secure: true,
+          sameSite: "Strict",
+        });
 
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        instance.defaults.headers.Authorization = `Bearer ${newToken}`;
+        onRefreshed(newToken);
+
         return instance(originalRequest);
       } catch (refreshErr) {
-        Cookies.remove("token");
-        Cookies.remove("refreshToken");
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
+        const axiosErr = refreshErr as AxiosError;
+
+        if (axiosErr.response?.status === 401) {
+          Cookies.remove("token");
+          Cookies.remove("refreshToken");
+          if (typeof window !== "undefined") {
+            window.location.href = "/login?expired=true";
+          }
         }
+
         return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
       }
     }
 

@@ -23,8 +23,24 @@ export default function CourseDetailsPage() {
   const { selectedCourse, loading, error } = useSelector(
     (state: RootState) => state.course
   );
+
   const [dir, setDir] = useState<"rtl" | "ltr">("ltr");
   const [started, setStarted] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
+
+  const openLightbox = (imgs: string[], index: number) => {
+    setImages(imgs);
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const nextImage = () =>
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+
+  const prevImage = () =>
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -121,90 +137,58 @@ export default function CourseDetailsPage() {
 
       {selectedCourse.sections?.map((section: any) => {
         const contentType = section.type;
-        const parsedContent = (() => {
-          try {
-            return JSON.parse(section.content || "[]");
-          } catch {
-            return [];
-          }
-        })();
+        let parsedContent: any = [];
+        try {
+          parsedContent = JSON.parse(section.content || "[]");
+        } catch {}
 
         return (
           <div key={section.id} className="mb-6">
-            {/* نصوص Quill */}
-            {contentType === "Text" && (
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded shadow">
-                {parsedContent.map((block: any, index: number) => (
-                  <p key={index} className="mb-2 whitespace-pre-wrap">
-                    {block.insert}
-                  </p>
+            {contentType === "Images" && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {parsedContent.map((imgUrl: string, index: number) => (
+                  <img
+                    key={index}
+                    src={imgUrl}
+                    alt={`صورة ${index + 1}`}
+                    className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-80 transition"
+                    onClick={() => openLightbox(parsedContent, index)}
+                  />
                 ))}
               </div>
             )}
-
-            {/* صور */}
-            {contentType === "Images" &&
-              parsedContent.map((imgUrl: string, index: number) => (
-                <img
-                  key={index}
-                  src={imgUrl}
-                  alt={`صورة القسم ${index + 1}`}
-                  className="w-full rounded shadow mb-4"
-                />
-              ))}
-
-            {/* فيديو */}
-            {contentType === "Video" && typeof section.content === "string" && (
-              <div className="aspect-video w-full rounded overflow-hidden shadow">
-                <video controls className="w-full h-full">
-                  <source src={section.content} type="video/mp4" />
-                  {t("courses.videoNotSupported") ||
-                    "متصفحك لا يدعم تشغيل الفيديو"}
-                </video>
-              </div>
-            )}
-
-            {/* PDF */}
-            {contentType === "PDF" &&
-              (() => {
-                let pdfContent: {
-                  pdf: string;
-                  title?: string;
-                  cover?: string;
-                } = {
-                  pdf: "",
-                };
-                try {
-                  pdfContent = JSON.parse(section.content || "{}");
-                } catch {}
-                return (
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded shadow flex flex-col md:flex-row items-center gap-4">
-                    {pdfContent.cover && (
-                      <img
-                        src={pdfContent.cover}
-                        alt="غلاف الملف"
-                        className="w-32 h-40 object-cover rounded"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold dark:text-white mb-2">
-                        {pdfContent.title || t("courses.pdfTitle") || "ملف PDF"}
-                      </h3>
-                      <a
-                        href={pdfContent.pdf}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                      >
-                        {t("courses.viewPdf") || "عرض الملف"}
-                      </a>
-                    </div>
-                  </div>
-                );
-              })()}
           </div>
         );
       })}
+
+      {/* نافذة عرض الصور (Lightbox) */}
+      {lightboxOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <button
+            className="absolute top-1/2 left-4 text-white text-3xl"
+            onClick={prevImage}
+          >
+            ‹
+          </button>
+          <img
+            src={images[currentImageIndex]}
+            alt="عرض الصورة"
+            className="max-w-full max-h-full rounded shadow-lg"
+          />
+          <button
+            className="absolute top-1/2 right-4 text-white text-3xl"
+            onClick={nextImage}
+          >
+            ›
+          </button>
+          <button
+            className="absolute top-6 right-6 text-white text-2xl"
+            onClick={() => setLightboxOpen(false)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,8 @@ import {
   Home,
   BookOpen,
   Phone,
+  ShieldQuestion,
+  LogIn,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { RootState } from "@/store";
@@ -35,7 +37,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const dispatch = useAppDispatch();
   const user = useSelector((state: RootState) => state.account.user);
-  const IsLoggedIn = useAppSelector(isLoggedIn);
+  const loggedIn = useSelector(isLoggedIn);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
@@ -51,6 +53,7 @@ export function Navbar() {
     { name: t("navigation.home"), href: "/", icon: Home },
     { name: t("navigation.subjects"), href: "/subjects", icon: BookOpen },
     { name: t("navigation.contact"), href: "/contact", icon: Phone },
+    { name: t("navigation.about"), href: "/about-us", icon: ShieldQuestion },
   ];
   useEffect(() => {
     dispatch(getAccount());
@@ -113,7 +116,7 @@ export function Navbar() {
               className="flex items-center gap-2 rtl:flex-row-reverse"
               ref={dropdownRef}
             >
-              {IsLoggedIn && user ? (
+              {loggedIn && user ? (
                 <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
@@ -210,8 +213,8 @@ export function Navbar() {
           />
         </Link>
         <div className="flex items-center gap-2">
-          {IsLoggedIn ? (
-            user && user.image ? (
+          {loggedIn ? (
+            user && user?.image ? (
               <Avatar className="w-8 h-8">
                 <AvatarImage src={user.image} alt={user.firstName} />
                 <AvatarFallback>{user.firstName?.[0] || "U"}</AvatarFallback>
@@ -255,14 +258,14 @@ export function Navbar() {
               );
             })}
 
-            {IsLoggedIn ? (
+            {loggedIn ? (
               <>
                 <Link
                   href="/profile"
                   className="flex items-center gap-2 px-4 py-2 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 "
                   onClick={() => setIsOpen(false)}
                 >
-                  {user.image ? (
+                  {user?.image ? (
                     <Avatar className="w-6 h-6">
                       <AvatarImage src={user.image} alt={user.firstName} />
                       <AvatarFallback>
@@ -294,14 +297,20 @@ export function Navbar() {
                 </button>
               </>
             ) : (
-              <div className="px-3 py-2 space-y-2">
+              <div className="px-1 py-2 space-y-2">
                 <Link href="/login" className="block">
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button
+                    variant="ghost"
+                    className=" justify-start flex items-center gap-2"
+                  >
+                    <LogIn className="w-5 h-5" />
                     {t("navigation.login")}
                   </Button>
                 </Link>
                 <Link href="/register" className="block">
-                  <Button className="w-full">{t("navigation.register")}</Button>
+                  <Button className="w-full text-white dark:bg-third">
+                    {t("navigation.register")}
+                  </Button>
                 </Link>
               </div>
             )}

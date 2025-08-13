@@ -1,11 +1,4 @@
-import {
-  ChartArea,
-  ChartBar,
-  Lamp,
-  LampCeiling,
-  LampWallUp,
-  User,
-} from "lucide-react";
+import { ChartLine, Lightbulb, UserSearch } from "lucide-react";
 import React from "react";
 interface card {
   icon: React.ReactNode;
@@ -15,18 +8,18 @@ interface card {
 export default function HowItWork() {
   const items = [
     {
-      icon: <User />,
+      icon: <UserSearch />,
       title: " دردشة داخل الكورس",
       description: " يحلل مساعد الذكاء الاصطناعي مستواك الحالي واهتماماتك",
     },
     {
-      icon: <Lamp />,
+      icon: <Lightbulb />,
       title: " توصيات ذكية",
       description:
         " يقترح عليك الكورسات والمسارات التعليمية الأنسب بناءً على تحليله الدقيق",
     },
     {
-      icon: <ChartBar />,
+      icon: <ChartLine />,
       title: "متابعة التقدم",
       description:
         " يتابع تقدمك ويعدل التوصيات باستمرار لضمان أفضل نتائج تعليمية",

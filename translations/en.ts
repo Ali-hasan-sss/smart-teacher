@@ -1,7 +1,9 @@
+import { title } from "process";
+
 export default {
   navigation: {
     home: "Home",
-    about: "About",
+    about: "About us",
     courses: "Courses",
     subjects: "subjects",
     contact: "Contact",
@@ -32,6 +34,11 @@ export default {
     complete_description: "Complete Learning",
     recommended: "recommended Courses",
     recommended_description: "recommended Courses",
+  },
+  aboutPage: {
+    subtitle:
+      "في عالم يتطور بسرعة، أصبح التعليم بحاجة إلى حلول مبتكرة تجمع بين التقنية الحديثة وطرق التعلم الفعّالة. ومن هنا وُلد تطبيق المعلم الذكي، ليكون منصة تعليمية متكاملة تدعم الطلاب والمعلمين على حد سواء. ​",
+    title: "منصتك التعليمية المتكاملة",
   },
   auth: {
     loginTitle: "Login to Your Account",

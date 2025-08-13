@@ -15,7 +15,6 @@ export default function LoaderCard() {
 
   return (
     <div className="p-4 bg-white dark:bg-gray-900 rounded-xl shadow space-y-4">
-      {/* صورة أو فيديو الدرس */}
       <Skeleton
         height={200}
         borderRadius={10}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "../ui/button";
 
 export default function CTA() {
@@ -15,9 +16,11 @@ export default function CTA() {
         ​منصة تعليمية متطورة تستخدم الذكاء الاصطناعي لتقديم تجربة تعلم مخصصة
         وفعالة. اكتشف كورسات مصممة خصيصاً لك وحقق أهدافك التعليمية بأسرع وقت. ​
       </p>
-      <Button className="rounded-full py-4 px-5 text-white w-[150px]`">
-        ابدا الان
-      </Button>
+      <Link href={"/subjects"}>
+        <Button className="rounded-full py-4 px-5 text-white w-[150px]`">
+          ابدا الان
+        </Button>
+      </Link>
     </div>
   );
 }
