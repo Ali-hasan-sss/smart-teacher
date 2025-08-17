@@ -24,6 +24,7 @@ import HowItWork from "@/components/howItWork";
 import Hero from "@/components/hero";
 import CourseType from "@/components/courseType";
 import { isLoggedIn } from "@/store/auth/authSlice";
+import Chat from "@/components/chat";
 
 export default function HomePage() {
   const { t, language } = useTranslation();
@@ -155,6 +156,7 @@ export default function HomePage() {
         <CTA />
       </div>
       <HowItWork />
+      <Chat />
     </div>
   );
 }

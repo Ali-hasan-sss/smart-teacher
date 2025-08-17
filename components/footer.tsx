@@ -83,7 +83,7 @@ export default function Footer() {
             </ul>
           </div>
           <div className="flex flex-col gap-5 ">
-            <h2 className="text-white z-50 text-xl">الدعم و المساعدة</h2>
+            <h2 className="text-white  text-xl">الدعم و المساعدة</h2>
             <ul>
               {supportLink.map((item, index) => (
                 <li key={index}>

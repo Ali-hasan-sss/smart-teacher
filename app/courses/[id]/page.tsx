@@ -13,7 +13,7 @@ import { saveRecentLesson } from "@/utils/recentLessons";
 import { markCourseAsViewed } from "@/utils/RecommendedCourses";
 import { useCourseActivityTracker } from "@/hooks/useCourseActivity";
 import CourseEntray from "@/components/courseIntray";
-import { removeBookmark } from "@/store/bookmark/bookmarkThunks";
+import Chat from "@/components/chat";
 
 export default function CourseDetailsPage() {
   const { t, language } = useTranslation();
@@ -189,6 +189,7 @@ export default function CourseDetailsPage() {
           </button>
         </div>
       )}
+      <Chat courseId={Number(id)} />
     </div>
   );
 }

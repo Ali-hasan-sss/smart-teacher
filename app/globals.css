@@ -109,3 +109,33 @@
   background-repeat: no-repeat;
   background-size: cover;
 }
+.dot {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  background-color: #555;
+  border-radius: 50%;
+  display: inline-block;
+  animation: wave 1.3s linear infinite;
+}
+
+.dot1 {
+  animation-delay: 0s;
+}
+.dot2 {
+  animation-delay: 0.2s;
+}
+.dot3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes wave {
+  0%,
+  60%,
+  100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}

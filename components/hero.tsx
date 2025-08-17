@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AnimatedRobot } from "./animated-robot";
+import { AnimatedRobot } from "./robot/animated-robot";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { Clock, DollarSign, ScreenShare, User } from "lucide-react";

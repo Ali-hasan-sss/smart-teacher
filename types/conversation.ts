@@ -7,7 +7,7 @@ export interface Message {
   createdAt: string;
   updatedAt: string | null;
   audioFile: string | null;
-  content: string;
+  content: string | null;
   order: number;
 }
 

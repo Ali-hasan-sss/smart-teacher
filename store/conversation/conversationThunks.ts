@@ -45,15 +45,15 @@ export const fetchMessagesByCourse = createAsyncThunk<
 );
 
 export const sendMessage = createAsyncThunk<
-  Message,
+  Message[],
   { courseId: number; contentType: string; content: string }
 >("conversation/sendMessage", async (messageData, { rejectWithValue }) => {
   try {
-    const res = await axios.post<MessageResponse>(
+    const res = await axios.post<ConversationResponse<Message>>(
       "/api/Client/Conversation/message",
       messageData
     );
-    return res.data.data;
+    return res.data.data.items;
   } catch (err: any) {
     return rejectWithValue(err.response?.data || "حدث خطأ أثناء إرسال الرسالة");
   }
@@ -126,17 +126,17 @@ export const fetchGeneralMessages = createAsyncThunk<
 
 // إرسال رسالة عامة
 export const sendGeneralMessage = createAsyncThunk<
-  Message,
+  Message[],
   { courseId: number; contentType: string; content: string }
 >(
   "conversation/sendGeneralMessage",
   async (messageData, { rejectWithValue }) => {
     try {
-      const res = await axios.post<MessageResponse>(
+      const res = await axios.post<ConversationResponse<Message>>(
         "/api/Client/Conversation/General/message",
         messageData
       );
-      return res.data.data; // هنا فقط بيانات الرسالة
+      return res.data.data.items;
     } catch (err: any) {
       return rejectWithValue(
         err.response?.data || "حدث خطأ أثناء إرسال الرسالة العامة"

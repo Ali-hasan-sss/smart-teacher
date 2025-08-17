@@ -78,7 +78,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="absolute top-0 left-0 w-full z-50">
+    <nav className="absolute top-0 left-0 w-full z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="hidden md:flex items-center justify-between h-20 pt-4">
           {/* وسط القائمة داخل صندوق أبيض مدور */}
