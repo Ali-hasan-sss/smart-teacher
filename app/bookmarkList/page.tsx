@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import CourseCard from "@/components/cards/CourseCard";
 import LoaderPage from "@/components/loaders/LoaderPage";
 import { useTranslation } from "@/hooks/useTranslation";
+import Chat from "@/components/chat";
 
 export default function BookmarkList() {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,6 +41,7 @@ export default function BookmarkList() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 pt-[100px]">
+      <Chat />
       <h2 className="text-2xl font-bold mb-6">{t("courses.bookMarks")}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {bookmarks.map((bookmark) => (

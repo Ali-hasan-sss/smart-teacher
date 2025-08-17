@@ -11,6 +11,7 @@ import PaginationComponent from "@/components/pagination";
 import LoaderPage from "@/components/loaders/LoaderPage";
 import { FetchCoursesParams } from "@/types/course";
 import SearchBar from "@/components/forms/SearchBar";
+import Chat from "@/components/chat";
 
 export default function CoursesPage() {
   const { t, language } = useTranslation();
@@ -61,6 +62,7 @@ export default function CoursesPage() {
   if (loading) return <LoaderPage />;
   return (
     <div className="min-h-screen py-12 pt-[100px]  px-4 sm:px-6 lg:px-8">
+      <Chat />
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-3 py-5 md:justify-between mb-8 items-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white ">

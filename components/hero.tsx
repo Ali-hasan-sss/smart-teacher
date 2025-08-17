@@ -55,7 +55,7 @@ export default function Hero({ isHome = true }: heroProps) {
       <div className="max-w-7xl mx-auto z-50">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Content */}
-          <div className="text-center flex flex-col lg:mr-20 items-center gap-0 text-white max-w-2xl mx-auto">
+          <div className="text-center flex flex-col lg:mr-20 items-center gap-0 text-white max-w-2xl mx-1">
             {!isHome && (
               <h1 className="text-4xl text-white font-bold leading-tight mt-6">
                 {t("aboutPage.title")}

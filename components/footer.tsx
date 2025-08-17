@@ -38,7 +38,7 @@ export default function Footer() {
         <div className="flex flex-col  w-full md:w-1/3 gap-5 mt-10">
           <div className="flex items-center w-24 h-24 justify-center rounded overflow-hidden p-1s bg-white">
             <Image
-              src={"/images/footerLogo.png"}
+              src={"/images/logo.png"}
               height={100}
               width={100}
               alt="smart teacher"

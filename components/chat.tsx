@@ -30,6 +30,7 @@ import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import TeachingRobot from "./robot/teachingRobot";
 import Image from "next/image";
+import axios from "@/lib/axios";
 
 interface ChatProps {
   courseId?: number;
@@ -44,6 +45,10 @@ export default function Chat({ courseId }: ChatProps) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [contentType, setContentType] = useState<"TEXT" | "AUDIO">("TEXT");
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -89,6 +94,62 @@ export default function Chat({ courseId }: ChatProps) {
   const isoading = messages.some(
     (m: Message) => m.messageType === "Answer" && !m.content
   );
+  const handleAudio = async () => {
+    if (!isRecording) {
+      // بدء التسجيل
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+        const formData = new FormData();
+        formData.append("file", audioBlob, `audio_${Date.now()}.webm`);
+
+        // إيقاف كل المسارات لمنع بقاء المايك مشغول
+        stream.getTracks().forEach((track) => track.stop());
+
+        try {
+          const res = await axios.post(
+            "/api/Common/BaseFile/UploadAnyFile",
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+          );
+
+          const payload = {
+            courseId: courseId ?? 0,
+            contentType: "AUDIO",
+            content: res.data.filePath,
+          };
+
+          if (courseId) {
+            dispatch(sendMessage(payload));
+          } else {
+            dispatch(sendGeneralMessage(payload));
+          }
+        } catch (error) {
+          console.error("Failed to upload audio:", error);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } else {
+      // إيقاف التسجيل
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+    }
+  };
+
   return (
     <>
       {/* الزر العائم */}
@@ -153,26 +214,42 @@ export default function Chat({ courseId }: ChatProps) {
                 <ScrollArea className="flex-1 p-3 space-y-2">
                   {messages.length > 0 ? (
                     <>
-                      {messages.map((m: Message) => (
-                        <div
-                          key={m.id}
-                          className={`p-2 my-2 rounded-lg max-w-xl w-3/4 ${
-                            m.messageType === "Question"
-                              ? "ml-auto bg-blue-600 text-white"
-                              : "mr-auto bg-gray-200 dark:bg-gray-800"
-                          }`}
-                        >
-                          {m.messageType === "Answer" && !m.content ? (
-                            <div className="flex items-center space-x-1">
-                              <span className="dot dot1" />
-                              <span className="dot dot2" />
-                              <span className="dot dot3" />
+                      {messages.map((m: Message) => {
+                        const isUser = m.messageType === "Question";
+                        return (
+                          <div key={m.id} className="relative flex w-full">
+                            {!isUser && (
+                              <div className="flex-shrink-0 mr-2">
+                                <Image
+                                  src="/images/robot.png"
+                                  alt="chat"
+                                  width={30}
+                                  height={30}
+                                  className="rounded-full"
+                                />
+                              </div>
+                            )}
+
+                            <div
+                              className={`p-2 my-2 rounded-xl max-w-xl ${
+                                isUser
+                                  ? "ml-auto bg-blue-600 text-white rounded-br-none"
+                                  : "mr-auto bg-gray-200 dark:bg-gray-800 rounded-tl-none"
+                              }`}
+                            >
+                              {m.messageType === "Answer" && !m.content ? (
+                                <div className="flex items-center space-x-1">
+                                  <span className="dot dot1" />
+                                  <span className="dot dot2" />
+                                  <span className="dot dot3" />
+                                </div>
+                              ) : (
+                                m.content
+                              )}
                             </div>
-                          ) : (
-                            m.content
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                       <div ref={bottomRef} />
                     </>
                   ) : (
@@ -188,22 +265,24 @@ export default function Chat({ courseId }: ChatProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      setContentType(contentType === "TEXT" ? "AUDIO" : "TEXT")
+                      contentType === "TEXT"
+                        ? setContentType("AUDIO")
+                        : handleAudio()
                     }
                   >
                     {contentType === "TEXT" ? (
                       <Mic className="w-5 h-5" />
                     ) : (
-                      <Send className="w-5 h-5" />
+                      <Mic
+                        className={`w-5 h-5 ${
+                          isRecording ? "animate-pulse text-red-500" : ""
+                        }`}
+                      />
                     )}
                   </Button>
 
                   <Input
-                    placeholder={
-                      contentType === "TEXT"
-                        ? "اكتب رسالتك..."
-                        : "سجّل ملاحظة صوتية..."
-                    }
+                    placeholder={"اكتب رسالتك..."}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
@@ -214,7 +293,6 @@ export default function Chat({ courseId }: ChatProps) {
                 </div>
               </Card>
 
-              {/* النصف الثاني: الروبوت (يظهر فقط في md وما فوق) */}
               <div className="hidden md:flex w-1/2 items-center justify-center bg-white/30 dark:bg-primary/30 backdrop-blur-md">
                 <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
                   <ambientLight intensity={0.5} />

@@ -1,5 +1,6 @@
 "use client";
 import AboutSmart from "@/components/aboutPage/aboutSmart";
+import Chat from "@/components/chat";
 import Hero from "@/components/hero";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -59,6 +60,7 @@ export default function About() {
   return (
     <>
       <Hero isHome={false} />
+      <Chat />
       <AboutSmart />
       <section className="flex flex-col text-center w-full items-cemter bg-third gap-5  py-10  px-2 md:px-20">
         <h1 className="text-3xl font-bold">رؤيتنا ورسالتنا</h1>

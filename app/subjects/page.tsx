@@ -12,6 +12,7 @@ import { fetchSubjects } from "@/store/subject/subjectThunk";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import Chat from "@/components/chat";
 
 export default function SubjectsList() {
   const dispatch = useAppDispatch();
@@ -40,6 +41,7 @@ export default function SubjectsList() {
 
   return (
     <div className="min-h-screen pt-[100px] py-12 px-4 sm:px-6 lg:px-8">
+      <Chat />
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-3 py-5 md:justify-between mb-8  items-center">
           <h1 className="text-3xl w-full md:w-1/3 font-bold  text-gray-900 dark:text-white ">
