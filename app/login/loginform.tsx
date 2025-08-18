@@ -20,7 +20,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/auth/authThunks";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
-import { setUser } from "@/store/auth/authSlice";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,7 +116,11 @@ export default function LoginForm() {
               <div className="text-red-600 text-sm text-center">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-primary text-gray-800 hover:bg-blue-400 dark:text-white dark:bg-third "
+              disabled={loading}
+            >
               {loading ? "Loading..." : t("auth.loginButton")}
             </Button>
           </form>

@@ -246,7 +246,11 @@ export default function RegisterForm() {
               <div className="text-red-600 text-sm text-center">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full bg-primary text-gray-800 hover:bg-blue-400 dark:text-white dark:bg-third "
+              disabled={isLoading}
+            >
               {isLoading ? "Creating Account..." : t("auth.registerButton")}
             </Button>
           </form>

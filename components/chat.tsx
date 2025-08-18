@@ -9,15 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Download,
-  Mic,
-  Send,
-  MessageCircle,
-  ArrowBigRight,
-  ArrowDown,
-  X,
-} from "lucide-react";
+import { Download, Mic, Send, X } from "lucide-react";
 import {
   fetchMessagesByCourse,
   fetchGeneralMessages,
@@ -28,9 +20,9 @@ import { RootState } from "@/store";
 import { useSelector } from "react-redux";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
-import TeachingRobot from "./robot/teachingRobot";
 import Image from "next/image";
 import axios from "@/lib/axios";
+import { AnimatedRobot } from "./robot/animated-robot";
 
 interface ChatProps {
   courseId?: number;
@@ -298,7 +290,7 @@ export default function Chat({ courseId }: ChatProps) {
                   <ambientLight intensity={0.5} />
                   <directionalLight position={[5, 5, 5]} intensity={1.5} />
                   <Environment preset="sunset" />
-                  <TeachingRobot loading={isoading} />
+                  <AnimatedRobot />
                 </Canvas>
               </div>
             </div>
