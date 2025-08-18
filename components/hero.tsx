@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { AnimatedRobot } from "./robot/animated-robot";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { Clock, DollarSign, ScreenShare, User } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Canvas } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
+
+import RobotScene from "./robot/RobotScene";
 
 interface heroProps {
   isHome?: boolean;
@@ -123,14 +122,7 @@ export default function Hero({ isHome = true }: heroProps) {
 
           {/* Right Side - 3D Robot */}
           <div className="flex justify-center lg:justify-end rtl:lg:justify-start">
-            <div className="w-full max-w-md hidden md:block">
-              <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[5, 5, 5]} intensity={1.5} />
-                <Environment preset="sunset" />
-                <AnimatedRobot />
-              </Canvas>
-            </div>
+            <RobotScene className="w-full max-w-lg h-96" />
           </div>
         </div>
       </div>

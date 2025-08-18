@@ -23,6 +23,7 @@ import { Environment } from "@react-three/drei";
 import Image from "next/image";
 import axios from "@/lib/axios";
 import { AnimatedRobot } from "./robot/animated-robot";
+import RobotScene from "./robot/RobotScene";
 
 interface ChatProps {
   courseId?: number;
@@ -286,12 +287,7 @@ export default function Chat({ courseId }: ChatProps) {
               </Card>
 
               <div className="hidden md:flex w-1/2 items-center justify-center bg-white/30 dark:bg-primary/30 backdrop-blur-md">
-                <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
-                  <ambientLight intensity={0.5} />
-                  <directionalLight position={[5, 5, 5]} intensity={1.5} />
-                  <Environment preset="sunset" />
-                  <AnimatedRobot />
-                </Canvas>
+                <RobotScene className="w-full h-full" />
               </div>
             </div>
           </motion.div>
