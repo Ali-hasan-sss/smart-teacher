@@ -5,11 +5,11 @@ import { Loader, Search, X } from "lucide-react";
 import { Course } from "@/types/course";
 import axios from "@/lib/axios";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SearchBarProps {
   api?: string;
   placeholder?: string;
-  buttonLabel?: string;
   className?: string;
   isSubject?: boolean;
   subjectId?: string;
@@ -21,10 +21,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
     subjectId ? `&subjectId=${subjectId}` : ""
   }&title=`,
   placeholder = "Search...",
-  buttonLabel = "Search",
   isSubject = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,10 +90,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
             )}
             <Button
               type="submit"
-              className=" h-8 rounded-full bg-primary dark:bg-blue-700  dark:hover:bg-transparent text-white dark:text-white hover:text-gray-900"
+              className=" h-8 flex items-center justify-center gap-1 rounded-full bg-primary dark:bg-blue-700  dark:hover:bg-transparent text-white dark:text-white hover:text-gray-900"
             >
               <Search className="mr-2" />
-              {buttonLabel}
+              {t("navigation.search")}
             </Button>
           </div>
         )}

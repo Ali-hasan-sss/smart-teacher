@@ -189,7 +189,7 @@ export default function CourseDetailsPage() {
           </button>
         </div>
       )}
-      <Chat courseId={Number(id)} />
+      <Chat courseId={Number(id)} courseData={selectedCourse} />
     </div>
   );
 }

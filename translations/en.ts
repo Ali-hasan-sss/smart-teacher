@@ -12,6 +12,7 @@ export default {
     logout: "Logout",
     profile: "Profile",
     bookmarks: "Bookmarks",
+    search: "Search",
   },
   homePage: {
     title: "Welcome to Smart Teacher",
@@ -102,5 +103,63 @@ export default {
     saving: "Saving...",
     deleting: "Deleting...",
     uploading: "Uploading...",
+  },
+  chat: {
+    explain: "Explain the lesson",
+    quizzes: "Give me quizzes from the lesson",
+    course: "Course Chat",
+    general: "General Chat",
+  },
+  footer: {
+    description:
+      "An advanced educational platform using AI to provide a personalized and effective learning experience.",
+    fastLinks: {
+      title: "Quick Links",
+      home: "Home",
+      courses: "Courses",
+      aboutUs: "About Us",
+    },
+    supportLinks: {
+      title: "Support & Help",
+      contact: "Contact Us",
+      faq: "FAQ",
+      helpCenter: "Help Center",
+    },
+    social: {
+      title: "Follow Us",
+      facebook: "Facebook",
+      instagram: "Instagram",
+      linkedin: "Linkedin",
+      twitter: "Twitter",
+    },
+    copyright: "© 2024 Smart Learning Platform. All rights reserved.",
+  },
+  cta: {
+    title:
+      "An advanced educational platform using AI to provide a personalized and effective learning experience. Discover courses designed just for you and achieve your learning goals faster.",
+    description:
+      "An advanced educational platform using AI to provide a personalized and effective learning experience. Discover courses designed just for you and achieve your learning goals faster. ​An advanced educational platform using AI to provide a personalized and effective learning experience. Discover courses designed just for you and achieve your learning goals faster. ​An advanced educational platform using AI to provide a personalized and effective learning experience. Discover courses designed just for you and achieve your learning goals faster.",
+    button: "Start Now",
+  },
+  howItWork: {
+    title: "How AI Assistant Works?",
+    subtitle: "A fully personalized learning experience tailored to your needs",
+    items: [
+      {
+        title: "In-Course Chat",
+        description:
+          "The AI assistant analyzes your current level and interests",
+      },
+      {
+        title: "Smart Recommendations",
+        description:
+          "Suggests the most suitable courses and learning paths based on its detailed analysis",
+      },
+      {
+        title: "Progress Tracking",
+        description:
+          "Monitors your progress and continuously adjusts recommendations for the best learning outcomes",
+      },
+    ],
   },
 };

@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { ChartLine, Lightbulb, UserSearch } from "lucide-react";
 import React from "react";
 interface card {
@@ -6,29 +7,28 @@ interface card {
   description: string;
 }
 export default function HowItWork() {
+  const { t } = useTranslation();
   const items = [
     {
       icon: <UserSearch />,
-      title: " دردشة داخل الكورس",
-      description: " يحلل مساعد الذكاء الاصطناعي مستواك الحالي واهتماماتك",
+      title: t("howItWork.items.0.title"),
+      description: t("howItWork.items.0.description"),
     },
     {
       icon: <Lightbulb />,
-      title: " توصيات ذكية",
-      description:
-        " يقترح عليك الكورسات والمسارات التعليمية الأنسب بناءً على تحليله الدقيق",
+      title: t("howItWork.items.1.title"),
+      description: t("howItWork.items.1.description"),
     },
     {
       icon: <ChartLine />,
-      title: "متابعة التقدم",
-      description:
-        " يتابع تقدمك ويعدل التوصيات باستمرار لضمان أفضل نتائج تعليمية",
+      title: t("howItWork.items.2.title"),
+      description: t("howItWork.items.2.description"),
     },
   ];
 
   const Card = ({ icon, title, description }: card) => {
     return (
-      <div className="flex flex-col items-center gap-4 p-4">
+      <div className="flex flex-col items-center justify-center gap-4 p-4 w-[300px]">
         <div className="bg-secondary text-blue-400 dark:bg-third w-20 h-20 rounded-full flex items-center justify-center">
           {icon}
         </div>
@@ -41,14 +41,14 @@ export default function HowItWork() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-5 px-1 py-10 md:px-10 mb-10 bg-white dark:bg-secondary">
+    <div className="flex flex-col items-center justify-center gap-5 px-1 py-10 md:px-10 mb-10 bg-white dark:bg-secondary">
       <h1 className="dark:text-white text-3xl text-center font-bold">
-        كيف يعمل مساعد الذكاء الاصطناعي؟
+        {t("howItWork.title")}
       </h1>
-      <p className="dark:text-gray-300 text-gray-700 text-lg">
-        تجربة تعلم مخصصة بالكامل لاحتياجاتك
+      <p className="dark:text-gray-300 text-gray-700 text-lg text-center">
+        {t("howItWork.subtitle")}{" "}
       </p>
-      <div className="flex flex-col items-center gap-5 md:flex-row md:justify-between">
+      <div className="flex flex-col items-center justify-center gap-5 md:flex-row ">
         {items.map((item, index) => (
           <Card
             title={item.title}

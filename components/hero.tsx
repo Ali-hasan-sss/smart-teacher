@@ -121,7 +121,7 @@ export default function Hero({ isHome = true }: heroProps) {
           </div>
 
           {/* Right Side - 3D Robot */}
-          <div className="flex justify-center lg:justify-end rtl:lg:justify-start">
+          <div className="hidden md:flex justify-center lg:justify-end rtl:lg:justify-start">
             <RobotScene className="w-full max-w-lg h-96" />
           </div>
         </div>

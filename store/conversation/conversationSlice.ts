@@ -8,12 +8,18 @@ import {
   fetchGeneralMessages,
   sendGeneralMessage,
 } from "./conversationThunks";
-import { ConversationResponse, Message } from "@/types/conversation";
+import {
+  ConversationResponse,
+  InstructionResponse,
+  Message,
+} from "@/types/conversation";
 
 interface ConversationState {
   conversations: any[];
   messages: Message[];
   loading: boolean;
+  sendingMessage: boolean;
+  sendingInstruction: boolean;
   error: string | null;
 }
 
@@ -21,13 +27,25 @@ const initialState: ConversationState = {
   conversations: [],
   messages: [],
   loading: false,
+  sendingMessage: false,
+  sendingInstruction: false,
   error: null,
 };
 
 const conversationSlice = createSlice({
   name: "conversation",
   initialState,
-  reducers: {},
+  reducers: {
+    addMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
+    updateMessage: (state, action) => {
+      const index = state.messages.findIndex((m) => m.id === action.payload.id);
+      if (index !== -1) {
+        state.messages[index] = { ...state.messages[index], ...action.payload };
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       // ================== Conversations ==================
@@ -57,6 +75,7 @@ const conversationSlice = createSlice({
 
       // ================== Send Message ==================
       .addCase(sendMessage.pending, (state, action) => {
+        state.sendingMessage = true;
         const { content, contentType } = action.meta.arg;
 
         // push user message
@@ -87,6 +106,7 @@ const conversationSlice = createSlice({
       .addCase(
         sendMessage.fulfilled,
         (state, action: PayloadAction<Message[]>) => {
+          state.sendingMessage = false;
           const payload = action.payload;
 
           // لاقي السؤال اللي رجع من السيرفر
@@ -136,7 +156,9 @@ const conversationSlice = createSlice({
           }
         }
       )
-
+      .addCase(sendMessage.rejected, (state) => {
+        state.sendingMessage = false;
+      })
       // ================== General Messages ==================
       .addCase(
         fetchGeneralMessages.fulfilled,
@@ -145,6 +167,7 @@ const conversationSlice = createSlice({
         }
       )
       .addCase(sendGeneralMessage.pending, (state, action) => {
+        state.sendingMessage = true;
         const { content, contentType } = action.meta.arg;
 
         // push user message
@@ -164,7 +187,7 @@ const conversationSlice = createSlice({
           id: Date.now() + 1,
           messageType: "Answer",
           contentType: "Text",
-          content: null,
+          content: "",
           audioFile: null,
           createdAt: new Date().toISOString(),
           updatedAt: null,
@@ -174,6 +197,7 @@ const conversationSlice = createSlice({
       .addCase(
         sendGeneralMessage.fulfilled,
         (state, action: PayloadAction<Message[]>) => {
+          state.sendingMessage = false;
           const payload = action.payload;
 
           const serverQuestion = payload.find(
@@ -221,8 +245,37 @@ const conversationSlice = createSlice({
             state.messages.push(...extra);
           }
         }
-      );
+      )
+      .addCase(sendGeneralMessage.rejected, (state) => {
+        state.sendingMessage = false;
+      })
+      // ================== Send Instruction ==================
+      .addCase(sendInstruction.pending, (state, action) => {
+        state.sendingInstruction = true; // ✅ بدء الإرسال
+      })
+      .addCase(sendInstruction.fulfilled, (state, action) => {
+        state.sendingInstruction = false; // ✅ انتهاء الإرسال
+        const text =
+          typeof action.payload.data === "string" ? action.payload.data : "";
+
+        if (text) {
+          state.messages.push({
+            id: Date.now(),
+            messageType: "Answer",
+            contentType: "Text",
+            content: text,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            order: state.messages.length + 1,
+            audioFile: null,
+          });
+        }
+      })
+      .addCase(sendInstruction.rejected, (state) => {
+        state.sendingInstruction = false;
+      });
   },
 });
+export const { addMessage, updateMessage } = conversationSlice.actions;
 
 export default conversationSlice.reducer;
