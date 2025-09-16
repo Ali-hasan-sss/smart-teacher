@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 213, 61%, 53%, 1;
+    --primary: 213, 84%, 38%;
     --primary-foreground: 210 40% 98%;
     --secondary: 213, 74%, 92%, 1;
     --secondary-foreground: 222.2 84% 4.9%;
@@ -39,7 +39,7 @@
     --primary-foreground: 222.2 84% 4.9%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --third: 257, 66%, 15%, 0.998;
+    --third: 213, 84%, 38%;
     --title: 0, 100%, 71%, 1;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -95,7 +95,6 @@
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: dash 2s linear forwards infinite;
-  color: hsla(210, 9%, 9%, 0.962);
 }
 .bg-cta {
   background: url("/images/bgcta.png");

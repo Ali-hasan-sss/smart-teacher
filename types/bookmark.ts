@@ -8,10 +8,12 @@ export interface Section {
   updatedAt: string;
   courseId: number;
   course: {
-    title: Record<string, string>; // مثال: { additionalProp1: string, ... }
+    title: Record<string, string>;
     description: string;
     subjectId: number;
     image: string;
+    gradetId: number;
+    isFree: boolean;
     courseFile: string;
     enableAI: boolean;
     id: number;
@@ -29,6 +31,8 @@ export interface Bookmark {
   createdAt: string;
   updatedAt: string;
   title: string;
+  gradetId: number;
+  isFree: boolean;
   description: string;
   subjectId: number;
   bookmarked: boolean;

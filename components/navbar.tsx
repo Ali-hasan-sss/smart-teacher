@@ -27,8 +27,17 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { RootState } from "@/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { usePathname, useRouter } from "next/navigation";
-import { getAccount } from "@/store/account/accountSlice";
 import Image from "next/image";
+import NotificationsDropdown from "./NotificationsDropdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { getAccount } from "@/store/account/accountThunks";
+import ConfirmDialog from "./ConfirmDialog";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,10 +48,13 @@ export function Navbar() {
   const user = useSelector((state: RootState) => state.account.user);
   const loggedIn = useSelector(isLoggedIn);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [ConfirmOpen, setConfirmOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
-
+  const accountType = useSelector(
+    (state: RootState) => state.auth.user?.accountType
+  );
   const handleLogout = () => {
     dispatch(logout());
     router.push("/");
@@ -51,7 +63,9 @@ export function Navbar() {
 
   const navigation = [
     { name: t("navigation.home"), href: "/", icon: Home },
-    { name: t("navigation.subjects"), href: "/subjects", icon: BookOpen },
+    ...(accountType !== "Parent"
+      ? [{ name: t("navigation.subjects"), href: "/subjects", icon: BookOpen }]
+      : []),
     { name: t("navigation.contact"), href: "/contact", icon: Phone },
     { name: t("navigation.about"), href: "/about-us", icon: ShieldQuestion },
   ];
@@ -79,17 +93,21 @@ export function Navbar() {
 
   return (
     <nav className="absolute top-0 left-0 w-full z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="hidden md:flex items-center justify-between h-20 pt-4">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="hidden lg:flex items-center justify-between h-20 pt-4">
           {/* وسط القائمة داخل صندوق أبيض مدور */}
           <div className="absolute left-1/2 top-2 w-[60vw] max-w-7xl transform -translate-x-1/2 mt-3 bg-third rounded-full shadow-md flex items-center justify-between px-6 py-1">
             {/* Logo and Navigation */}
             <div className="flex items-center gap-4 ">
               <Link href="/" className="flex-shrink-0">
                 <Image
-                  src="/images/logo.png"
-                  width={60}
-                  height={60}
+                  src={
+                    theme === "dark"
+                      ? "/images/whitelogo.png"
+                      : "/images/logo.png"
+                  }
+                  width={theme === "dark" ? 30 : 60}
+                  height={theme === "dark" ? 30 : 60}
                   alt="smart teacher"
                   className=""
                 />
@@ -111,74 +129,75 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Avatar / Auth Actions */}
-            <div
-              className="flex items-center gap-2 rtl:flex-row-reverse"
-              ref={dropdownRef}
-            >
+            <div className="relative flex items-center gap-3">
               {loggedIn && user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition"
-                  >
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.image} alt={user.firstName} />
-                      <AvatarFallback>
-                        {user.firstName?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm px-2">{user.firstName}</span>
-                  </button>
+                <>
+                  {/* DropdownMenu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={user.image} alt={user.firstName} />
+                          <AvatarFallback>
+                            {user.firstName?.[0] || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm px-2">{user.firstName}</span>
+                      </button>
+                    </DropdownMenuTrigger>
 
-                  {showDropdown && (
-                    <div className="absolute ltr:right-0 rtl:left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 z-50">
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => setShowDropdown(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        {t("navigation.profile")}
-                      </Link>
-                      <Link
-                        href="/bookmarkList"
-                        className="flex items-center gap-2 px-3 py-1 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => setShowDropdown(false)}
-                      >
-                        <Bookmark className="w-4 h-4" />
-                        {t("navigation.bookmarks")}
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:text-white hover:bg-red-500"
+                    <DropdownMenuContent className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-2 w-full text-sm"
+                        >
+                          <User className="w-4 h-4" />
+                          {t("navigation.profile")}
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {accountType !== "Parent" && (
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href="/bookmarkList"
+                            className="flex items-center gap-2 w-full text-sm"
+                          >
+                            <Bookmark className="w-4 h-4" />
+                            {t("navigation.bookmarks")}
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem
+                        onClick={() => setConfirmOpen(true)}
+                        className="flex items-center gap-2 text-red-600 focus:bg-red-500 focus:text-white"
                       >
                         <LogOut className="w-4 h-4" />
                         {t("navigation.logout")}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Notifications */}
+                  <NotificationsDropdown />
+                </>
               ) : (
-                <div className="flex gap-2 rtl:flex-row-reverse">
-                  <Link
-                    href="/login"
-                    className={`text-sm text-center bg-blue-600 hover:bg-blue-500  text-white font-bold w-[130px] px-3 py-1 rounded-full transition ${
-                      pathname === "/login"
-                        ? "bg-blue-500 text-white font-bold"
-                        : ""
-                    }`}
-                  >
-                    {t("navigation.login")}
-                  </Link>
-                </div>
+                // زر تسجيل الدخول إذا لم يكن مسجل الدخول
+                <Link
+                  href="/login"
+                  className="text-sm bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded-full"
+                >
+                  {t("navigation.login")}
+                </Link>
               )}
             </div>
           </div>
 
           {/* الجزء الأيمن: اللغة والثيم والافتار */}
           <div className="flex items-center gap-2 rtl:ml-0 rtl:mr-auto ml-auto">
-            {/* زر الثيم */}
             <Button
               variant="ghost"
               size="icon"
@@ -188,7 +207,6 @@ export function Navbar() {
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
 
-            {/* زر اللغة */}
             <Button
               variant="ghost"
               className="px-1"
@@ -203,25 +221,68 @@ export function Navbar() {
       </div>
 
       {/* موبايل */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 shadow">
+      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 shadow">
         <Link href="/">
           <Image
-            src={"/images/logo.png"}
-            width={50}
-            height={50}
+            src={
+              theme === "dark" ? "/images/whitelogo.png" : "/images/logo.png"
+            }
+            width={theme === "dark" ? 25 : 50}
+            height={theme === "dark" ? 25 : 50}
             alt="smart teacher"
           />
         </Link>
         <div className="flex items-center gap-2">
           {loggedIn ? (
-            user && user?.image ? (
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={user.image} alt={user.firstName} />
-                <AvatarFallback>{user.firstName?.[0] || "U"}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="w-5 h-5" />
-            )
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user?.image} alt={user?.firstName} />
+                      <AvatarFallback>
+                        {user?.firstName?.[0] || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 w-full text-sm"
+                    >
+                      <User className="w-4 h-4" />
+                      {t("navigation.profile")}
+                    </Link>
+                  </DropdownMenuItem>
+
+                  {accountType !== "Parent" && (
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/bookmarkList"
+                        className="flex items-center gap-2 w-full text-sm"
+                      >
+                        <Bookmark className="w-4 h-4" />
+                        {t("navigation.bookmarks")}
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={() => setConfirmOpen(true)}
+                    className="flex items-center gap-2 text-red-600 focus:bg-red-500 focus:text-white"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {t("navigation.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <NotificationsDropdown />
+            </div>
           ) : (
             <></>
           )}
@@ -237,7 +298,7 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-900 border-t dark:border-gray-700">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -277,17 +338,19 @@ export function Navbar() {
                   )}
                   {t("navigation.profile")}
                 </Link>
-                <Link
-                  href="/bookmarkList"
-                  className="flex items-center gap-2 px-4 py-2 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 "
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Bookmark className="w-5 h-5" />
-                  {t("navigation.bookmarks")}
-                </Link>
+                {accountType !== "Parent" && (
+                  <Link
+                    href="/bookmarkList"
+                    className="flex items-center gap-2 px-4 py-2 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 "
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Bookmark className="w-5 h-5" />
+                    {t("navigation.bookmarks")}
+                  </Link>
+                )}
                 <button
                   onClick={() => {
-                    handleLogout();
+                    setConfirmOpen(true);
                     setIsOpen(false);
                   }}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-base text-red-600 hover:bg-red-50 dark:hover:bg-red-900 "
@@ -302,14 +365,10 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     className=" justify-start flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
                   >
                     <LogIn className="w-5 h-5" />
                     {t("navigation.login")}
-                  </Button>
-                </Link>
-                <Link href="/register" className="block">
-                  <Button className="w-full text-white dark:bg-third">
-                    {t("navigation.register")}
                   </Button>
                 </Link>
               </div>
@@ -326,12 +385,23 @@ export function Navbar() {
 
               <Button variant="ghost" size="sm" onClick={toggleLanguage}>
                 <Globe className="h-4 w-4 mr-2" />
-                {language === "en" ? "العربية" : "English"}
+                {language === "en"
+                  ? t("navigation.arabic")
+                  : t("navigation.english")}
               </Button>
             </div>
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={ConfirmOpen}
+        setOpen={setConfirmOpen}
+        title={t("navigation.confirm_logout")}
+        message={t("navigation.confirm_logout_message")}
+        confirmText={t("navigation.yes")}
+        cancelText={t("navigation.cancel")}
+        onConfirm={handleLogout}
+      />
     </nav>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Grade {
   id: number;
@@ -25,9 +26,10 @@ interface GradeSelectProps {
 export default function GradeSelect({
   value,
   onChange,
-  placeholder = "اختر الصف",
+  placeholder,
   className,
 }: GradeSelectProps) {
+  const { t } = useTranslation();
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +56,7 @@ export default function GradeSelect({
       disabled={loading}
     >
       <SelectTrigger className={className}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder || t("grade.selectGrade")} />
       </SelectTrigger>
       <SelectContent>
         {grades.map((grade) => (

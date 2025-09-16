@@ -1,6 +1,8 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { ChartLine, Lightbulb, UserSearch } from "lucide-react";
 import React from "react";
+import { motion } from "framer-motion";
+
 interface card {
   icon: React.ReactNode;
   title: string;
@@ -48,14 +50,35 @@ export default function HowItWork() {
       <p className="dark:text-gray-300 text-gray-700 text-lg text-center">
         {t("howItWork.subtitle")}{" "}
       </p>
-      <div className="flex flex-col items-center justify-center gap-5 md:flex-row ">
-        {items.map((item, index) => (
-          <Card
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-          />
-        ))}
+      <div className="flex flex-wrap items-center justify-center gap-5 ">
+        {items.map((item, index) => {
+          let initialPosition = { opacity: 0, y: 50, x: 0 };
+
+          if (index % 3 === 0) {
+            initialPosition = { opacity: 0, x: -50, y: 0 };
+          } else if (index % 3 === 1) {
+            initialPosition = { opacity: 0, y: 50, x: 0 };
+          } else {
+            initialPosition = { opacity: 0, x: 50, y: 0 };
+          }
+
+          return (
+            <motion.div
+              key={index}
+              initial={initialPosition}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              exit={{ opacity: 0, y: -50 }}
+            >
+              <Card
+                title={item.title}
+                description={item.description}
+                icon={item.icon}
+              />
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

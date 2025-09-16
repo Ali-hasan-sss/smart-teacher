@@ -1,73 +1,81 @@
 "use client";
 import { useTranslation } from "@/hooks/useTranslation";
+import { RootState } from "@/store";
+import { socialLinks } from "@/utils/socialLimk";
+import { AnimatePresence, motion } from "framer-motion";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function Footer() {
   const { t } = useTranslation();
   const pathName = usePathname();
-
-  // استبدل القيم الثابتة بالترجمة مباشرة
+  const accountType = useSelector(
+    (state: RootState) => state.auth.user?.accountType
+  );
   const fastLinks = [
     { label: t("footer.fastLinks.home"), path: "/" },
-    { label: t("footer.fastLinks.courses"), path: "/courses" },
+    // إخفاء رابط المواد الدراسية لأولياء الأمور
+    ...(accountType !== "Parent"
+      ? [{ label: t("navigation.subjects"), path: "/subjects" }]
+      : []),
     { label: t("footer.fastLinks.aboutUs"), path: "/about-us" },
   ];
 
   const supportLinks = [
     { label: t("footer.supportLinks.contact"), path: "/contact" },
-    { label: t("footer.supportLinks.faq"), path: "/faq" },
-    { label: t("footer.supportLinks.helpCenter"), path: "/help" },
+    { label: t("footer.supportLinks.helpCenter"), path: "/contact" },
   ];
 
   return (
     <div className="relative bg-primary px-3 py-5 md:px-20 overflow-hidden rounded-t-[40px]">
       <div className="flex items-center flex-col md:flex-row md:justify-between gap-3 md:gap-10 w-full">
-        <Image
-          src={"/images/leftShip.png"}
-          alt="ship"
-          width={300}
-          height={300}
-          className="absolute top-0 left-0"
-        />
-        <Image
-          src={"/images/rihgtShip.png"}
-          alt="ship"
-          width={300}
-          height={300}
-          className="absolute bottom-0 right-0"
-        />
         <div className="absolute bottom-3 right-1/2 w-[200px] h-32 bg-white opacity-10 blur-2xl rounded-full pointer-events-none"></div>
         <div className="absolute bottom-1/3 right-1/2 w-32 h-[200px] bg-white opacity-10 blur-2xl rounded-full pointer-events-none"></div>
 
         <div className="flex flex-col w-full md:w-1/3 gap-5 mt-10">
-          <div className="flex items-center w-24 h-24 justify-center rounded overflow-hidden p-1s bg-white">
+          <div className="flex items-center w-24 h-24 justify-center rounded  p-1s ">
             <Image
-              src={"/images/logo.png"}
-              height={100}
-              width={100}
+              src={"/images/whitelogo.png"}
+              height={80}
+              width={80}
               alt="smart teacher"
             />
           </div>
           <p className="text-gray-300 text-lg">{t("footer.description")}</p>
-          <div className="flex text-white items-center gap-3">
-            {[Facebook, Instagram, Linkedin, Twitter].map((Icon, i) => (
-              <div
-                key={i}
-                className="w-10 h-10 flex items-center justify-center rounded-full 
-                bg-[#374151] cursor-pointer shadow 
-                transform transition-all duration-500 ease-in-out 
-                hover:scale-110 hover:bg-gray-900"
-              >
-                <Icon />
-              </div>
-            ))}
+          <div className="flex items-center gap-5 mt-10 z-50">
+            <AnimatePresence>
+              {socialLinks.map(({ href, icon: Icon }, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  whileHover={{
+                    x: [0, -5, 5, -5, 5, 0],
+                    transition: {
+                      duration: 0.6,
+                      ease: "easeInOut",
+                    },
+                  }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <Link
+                    href={href}
+                    target="_blank"
+                    className="hover:shadow-lg p-2 rounded-full"
+                  >
+                    <Icon className="w-8 h-8 text-white hover:text-yellow-500" />
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="flex w-full md:w-2/3 items-center justify-between px-1 md:px-10 gap-5">
+        <div className="flex w-full md:w-2/3  z-50 items-center justify-between px-4 md:px-10 gap-5">
           <div className="flex flex-col gap-5">
             <h2 className="text-white text-xl">
               {t("footer.fastLinks.title") || "روابط سريعة"}
@@ -78,7 +86,9 @@ export default function Footer() {
                   <Link
                     href={item.path}
                     className={`text-lg ${
-                      item.path === pathName ? "text-blue-900" : "text-gray-200"
+                      item.path === pathName
+                        ? "text-yellow-400"
+                        : "text-gray-200"
                     }`}
                   >
                     {item.label}
@@ -97,7 +107,9 @@ export default function Footer() {
                   <Link
                     href={item.path}
                     className={`text-lg ${
-                      item.path === pathName ? "text-blue-900" : "text-gray-200"
+                      item.path === pathName
+                        ? "text-yellow-400"
+                        : "text-gray-200"
                     }`}
                   >
                     {item.label}

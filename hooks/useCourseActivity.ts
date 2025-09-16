@@ -14,9 +14,9 @@ export const useCourseActivityTracker = (
   const sendIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (!selectedCourse?.id || !started) return;
 
-    // عند أول مرة يبدأ فيها المستخدم
     startTimeRef.current = Date.now();
     const localStorageKey = `course-activity-${selectedCourse.id}`;
 
@@ -37,7 +37,7 @@ export const useCourseActivityTracker = (
       const duration =
         Math.floor((now - startTimeRef.current) / 1000) + durationRef.current;
       localStorage.setItem(localStorageKey, duration.toString());
-    }, 10000); // كل 10 ثواني
+    }, 10000);
 
     sendIntervalRef.current = setInterval(() => {
       if (startTimeRef.current === null) return;
@@ -51,7 +51,7 @@ export const useCourseActivityTracker = (
         startTimeRef.current = Date.now();
         durationRef.current = 0;
       }
-    }, 3 * 60 * 1000); // كل 3 دقائق
+    }, 3 * 60 * 1000);
 
     const handleUnload = () => {
       if (startTimeRef.current === null) return;

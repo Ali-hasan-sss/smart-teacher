@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { login, register } from "./authThunks";
 import Cookies from "js-cookie";
-import { RootState } from "@/store";
 
 interface AuthState {
   user: any | null;
@@ -18,12 +17,15 @@ const initialState: AuthState = {
 };
 
 try {
-  const token = Cookies.get("token") || null;
-  const userJson = Cookies.get("user") || null;
-  if (token) initialState.token = token;
-  if (userJson) initialState.user = JSON.parse(userJson);
+  if (typeof window !== "undefined") {
+    const token = Cookies.get("token") || null;
+    const userJson = localStorage.getItem("user") || null;
+
+    if (token) initialState.token = token;
+    if (userJson) initialState.user = JSON.parse(userJson);
+  }
 } catch (error) {
-  console.error("Failed to parse user from cookies:", error);
+  console.error("Failed to parse user:", error);
 }
 
 const authSlice = createSlice({
@@ -35,10 +37,13 @@ const authSlice = createSlice({
       state.token = null;
       Cookies.remove("token");
       Cookies.remove("refreshToken");
-      Cookies.remove("user");
+      localStorage.removeItem("user");
     },
     setUser: (state, action: PayloadAction<any>) => {
       state.user = action.payload;
+      // تخزين نسخة من المستخدم بدون التوكنات
+      const { token, ...userWithoutTokens } = action.payload;
+      localStorage.setItem("user", JSON.stringify(userWithoutTokens));
     },
   },
   extraReducers: (builder) => {
@@ -55,15 +60,39 @@ const authSlice = createSlice({
           state.token = action.payload.token;
           state.user = action.payload.user;
 
-          Cookies.set("token", action.payload.token);
-          Cookies.set("user", JSON.stringify(action.payload.user));
+          // حفظ التوكنات في الكوكيز
+          Cookies.set("token", action.payload.token, {
+            secure: true,
+            sameSite: "Strict",
+          });
+          Cookies.set(
+            "refreshToken",
+            action.payload.user.token.refreshTokenValue,
+            { secure: true, sameSite: "Strict" }
+          );
+
+          // تخزين نسخة من المستخدم بدون التوكنات
+          const { token, ...userWithoutTokens } = action.payload.user;
+          localStorage.setItem("user", JSON.stringify(userWithoutTokens));
         }
       )
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Login failed";
+
+        if (
+          action.payload &&
+          typeof action.payload === "object" &&
+          "message" in action.payload
+        ) {
+          state.error = action.payload.message;
+        } else if (typeof action.payload === "string") {
+          state.error = action.payload;
+        } else {
+          state.error = "Login failed";
+        }
       })
 
+      // register cases
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -75,15 +104,40 @@ const authSlice = createSlice({
           state.token = action.payload.token ?? null;
           state.user = action.payload.user;
 
+          // حفظ التوكنات في الكوكيز
           if (action.payload.token) {
-            Cookies.set("token", action.payload.token);
+            Cookies.set("token", action.payload.token, {
+              secure: true,
+              sameSite: "Strict",
+            });
           }
-          Cookies.set("user", JSON.stringify(action.payload.user));
+          if (action.payload.user.token?.refreshTokenValue) {
+            Cookies.set(
+              "refreshToken",
+              action.payload.user.token.refreshTokenValue,
+              { secure: true, sameSite: "Strict" }
+            );
+          }
+
+          // تخزين نسخة من المستخدم بدون التوكنات
+          const { token, ...userWithoutTokens } = action.payload.user;
+          localStorage.setItem("user", JSON.stringify(userWithoutTokens));
         }
       )
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Registration failed";
+
+        if (
+          action.payload &&
+          typeof action.payload === "object" &&
+          "message" in action.payload
+        ) {
+          state.error = action.payload.message;
+        } else if (typeof action.payload === "string") {
+          state.error = action.payload;
+        } else {
+          state.error = "Registration failed";
+        }
       });
   },
 });

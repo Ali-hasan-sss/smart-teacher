@@ -14,6 +14,65 @@ interface CourseEntrayProps {
   isbookMark: boolean;
   descriptionText: string;
 }
+function renderDescription(desc: string) {
+  try {
+    const ops = JSON.parse(desc);
+    const listItems: JSX.Element[] = [];
+    const normalText: JSX.Element[] = [];
+
+    ops.forEach((op: any, idx: number) => {
+      if (op.insert) {
+        // فك النص إلى أسطر (بناءً على \n أو •)
+        const parts = op.insert
+          .split(/\n/) // قسم بالسطر
+          .map((p: string) => p.trim())
+          .filter((p: string) => p.length > 0);
+
+        parts.forEach((part: string, i: number) => {
+          if (part.startsWith("•")) {
+            const cleanText = part.replace(/^[•\s\t]+/, "").trim();
+            if (cleanText)
+              listItems.push(
+                <li key={`${idx}-${i}`} className="mb-1 leading-relaxed">
+                  {cleanText}
+                </li>
+              );
+          } else {
+            normalText.push(
+              <p key={`${idx}-${i}`} className="mb-2 leading-relaxed">
+                {part}
+              </p>
+            );
+          }
+        });
+      }
+    });
+
+    return (
+      <div className="w-full">
+        {normalText.length > 0 && (
+          <div className="space-y-2 mb-3">{normalText}</div>
+        )}
+        {listItems.length > 0 && (
+          <ul
+            className="space-y-2 w-full"
+            style={{
+              listStyleType: "disc",
+              paddingInlineStart: "1.5rem",
+              marginInlineStart: "0",
+              marginInlineEnd: "0",
+            }}
+          >
+            {listItems}
+          </ul>
+        )}
+      </div>
+    );
+  } catch {
+    return <p className="leading-relaxed">{desc}</p>;
+  }
+}
+
 export default function CourseEntray({
   onStart,
   selectedCourse,
@@ -26,6 +85,7 @@ export default function CourseEntray({
   const totaltext = formatDuration(total, language);
   const dispatch = useAppDispatch();
   const { toggleLoading } = useSelector((state: RootState) => state.bookmark);
+
   const toggleBookmark = async () => {
     if (isbookMark)
       await dispatch(addBookmark({ courseId: selectedCourse.id.toString() }));
@@ -34,91 +94,134 @@ export default function CourseEntray({
 
   return (
     <div
-      className="px-1 md:px-10 mx-auto p-6 pt-[80px] md:pt-[150px]"
+      className="px-2 sm:px-4 md:px-6 lg:px-10 mx-auto p-4 sm:p-6 pt-[80px] md:pt-[120px] lg:pt-[150px]"
       dir={dir}
     >
-      <div>
+      <div className="max-w-7xl mx-auto">
         <div
-          className="flex flex-col md:flex-row  gap-10 items-center"
+          className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-center"
           dir="rtl"
         >
           <img
             src={selectedCourse.image}
             alt="صورة الكورس"
-            className="w-full md:w-1/2 h-64 object-cover rounded-[40px] shadow"
+            className="w-full lg:w-1/2 h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-[20px] sm:rounded-[30px] lg:rounded-[40px] shadow-lg"
           />
-          <div className="flex-1" dir="rtl">
-            <h1 className="text-2xl font-bold mb-2">{selectedCourse.title}</h1>
+          <div className="flex-1 w-full" dir="rtl">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4">
+              {selectedCourse.title}
+            </h1>
 
-            <div className="flex flex-col gap-4 mb-4 text-sm text-gray-500">
-              {selectedCourse.duration && (
+            <div className="flex flex-col gap-3 mb-4 text-sm text-gray-500">
+              {selectedCourse.duration && selectedCourse.type !== "Quiz" && (
                 <div className="flex items-center gap-2">
-                  <Timer /> مدة الدرس: {totaltext}
+                  <Timer className="w-4 h-4 flex-shrink-0" />
+                  <span>
+                    {t("courses.duration_label")}: {totaltext}
+                  </span>
                 </div>
               )}
-              {selectedCourse.sections && (
-                <div className="flex items-center gap-2">
-                  <BookOpen /> عدد الأقسام: {selectedCourse.sections.length}
-                </div>
-              )}
+              {selectedCourse.sections &&
+                selectedCourse.sections.length > 0 &&
+                selectedCourse.type !== "Quiz" && (
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 flex-shrink-0" />
+                    <span>
+                      {t("courses.sections_count")}:{" "}
+                      {selectedCourse.sections.length}
+                    </span>
+                  </div>
+                )}
               <div className="flex items-center gap-2">
-                <Folder /> النوع: {selectedCourse.type}
+                <Folder className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  {t("courses.type_label")}:{" "}
+                  {t(`courses.course_types.${selectedCourse.type}`)}
+                </span>
               </div>
             </div>
           </div>
         </div>
-        <div className="bg-secondary w-full flex flex-col md:flex-row  gap-5  px-6 py-10 mt-10 rounded-[20px]">
+
+        <div className="bg-secondary w-full flex flex-col lg:flex-row gap-4 lg:gap-6 px-4 sm:px-6 py-6 sm:py-8 lg:py-10 mt-6 sm:mt-8 lg:mt-10 rounded-[15px] sm:rounded-[20px]">
           <div className="flex flex-col w-full rounded-lg bg-white dark:bg-gray-900">
-            {/* ✅ قائمة الأقسام */}
-            {selectedCourse.sections && (
-              <div className="mb-4 text-sm text-gray-700 py-5 px-1 md:px-5 dark:text-gray-300 border-t pt-4">
-                <h2 className="text-base font-semibold mb-2">وصف الدرس:</h2>
-                <p className="text-lg py-5">{descriptionText}</p>
-                <div className=" px-5 gap-2 flex flex-wrap w-full">
-                  {selectedCourse.sections
-                    .slice()
-                    .sort((a, b) => a.order - b.order)
-                    .map((section, index) => (
-                      <div
-                        key={section.id}
-                        className="flex  w-[300px] p-3 rounded-lg items-center gap-1 bg-secondary"
-                      >
-                        <img
-                          src={section.course.image}
-                          className="rounded-lg w-20 h-20"
-                          alt={section.title}
-                        />
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium">
-                            القسم {index + 1}:
-                          </span>{" "}
-                          <span className="italic">
-                            العنوان :{section.title || "--------"}
-                          </span>
-                          <span className="italic">
-                            {" "}
-                            النوع : {section.type}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+            {/* ✅ وصف الدرس */}
+            {descriptionText && (
+              <div className="mb-4 text-sm text-gray-700 py-4 px-3 md:px-5 dark:text-gray-300 border-t pt-4">
+                <h2 className="text-base font-semibold mb-3">
+                  {t("courses.course_description")}:
+                </h2>
+                <div className="text-sm md:text-base py-2 overflow-hidden">
+                  {renderDescription(descriptionText)}
                 </div>
               </div>
             )}
+
+            {/* ✅ قائمة الأقسام */}
+            {selectedCourse.sections && selectedCourse.sections.length > 0 && (
+              <div className="px-3 md:px-5 py-3 gap-3 flex flex-wrap w-full">
+                {selectedCourse.sections
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((section, index) => {
+                    // استخراج الصورة
+                    let cover: string | null = null;
+                    try {
+                      if (section.content && section.type === "Pdf") {
+                        const parsed = JSON.parse(section.content);
+                        cover = parsed.cover || null;
+                      }
+                    } catch {}
+
+                    const imageUrl =
+                      cover || section.course.image || selectedCourse.image;
+                    const title =
+                      section.title || `${t("courses.section")} ${index + 1}`;
+
+                    return (
+                      <div
+                        key={section.id}
+                        className="flex w-full sm:w-[250px] p-3 rounded-lg items-center gap-3 bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <img
+                          src={imageUrl}
+                          className="rounded-lg w-16 h-16 sm:w-20 sm:h-20 object-cover flex-shrink-0"
+                          alt={title}
+                        />
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                          <span className="font-medium text-sm">
+                            {t("courses.section")} {index + 1}:
+                          </span>
+                          {section.title && (
+                            <span className="italic text-xs text-gray-600 dark:text-gray-400 truncate">
+                              {t("courses.title_label")}: {title}
+                            </span>
+                          )}
+                          <span className="italic text-xs text-gray-600 dark:text-gray-400">
+                            {t("courses.type_label")}:{" "}
+                            {t(`courses.section_types.${section.type}`)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
-          <div className="flex  md:w-[350px] h-[150px] flex-col items-cente justify-center gap-2 p-4 rounded-[20px] bg-white dark:bg-gray-900">
+
+          <div className="flex w-full md:w-[350px] h-auto md:h-[150px] flex-col items-center justify-center gap-3 p-4 rounded-[20px] bg-white dark:bg-gray-900">
             <button
               onClick={onStart}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-base font-medium transition-colors"
             >
-              ابدأ الدراسة الآن
+              {t("courses.start_studying")}
             </button>
             <button
               onClick={toggleBookmark}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-lg"
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-base font-medium transition-colors"
             >
               {toggleLoading
-                ? "loadind..."
+                ? "loading..."
                 : isbookMark
                 ? t("courses.remove_bookMark")
                 : t("courses.save_bookMark")}

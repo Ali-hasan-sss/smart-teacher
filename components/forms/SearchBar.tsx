@@ -6,6 +6,7 @@ import { Course } from "@/types/course";
 import axios from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
+import { motion } from "framer-motion";
 
 interface SearchBarProps {
   api?: string;
@@ -44,15 +45,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
     } catch (error) {
       console.error(error);
       setResult([]);
-      setShowDropdown(true); // حتى لو فشل نعرض رسالة فارغة
+      setShowDropdown(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const onSelectResult = (id: string) => {
-    if (isSubject) localStorage.setItem("selectedSubject", id);
-    router.push(`${isSubject ? `courses` : `courses/${id}`}`);
+  const onSelectResult = (result: Course) => {
+    if (isSubject) {
+      // إذا كان البحث في المواد، احفظ بيانات المادة كاملة واذهب إلى صفحة الدروس
+      localStorage.setItem("selectedSubject", JSON.stringify(result));
+      router.push("courses");
+    } else {
+      // إذا كان البحث في الدروس، اذهب مباشرة إلى الدرس
+      router.push(`courses/${result.id}`);
+    }
     setShowDropdown(false);
   };
 
@@ -100,33 +107,40 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </form>
 
       {showDropdown && (
-        <div
-          dir="rtl"
-          className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md max-h-64 overflow-y-auto"
+        <motion.div
+          initial={{ opacity: 0, y: -10, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -10, height: 0 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
         >
-          {result.length > 0 ? (
-            result.map((result) => (
-              <div
-                key={result.id}
-                className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                onClick={() => onSelectResult(result.id.toString())}
-              >
-                <img
-                  src={result.image}
-                  alt={result.title}
-                  className="w-10 h-10 object-cover rounded"
-                />
-                <span className="text-sm text-gray-800 dark:text-gray-100">
-                  {result.title}
-                </span>
+          <div
+            dir="rtl"
+            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md max-h-64 overflow-y-auto"
+          >
+            {result.length > 0 ? (
+              result.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => onSelectResult(item)}
+                >
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-10 h-10 object-cover rounded"
+                  />
+                  <span className="text-sm text-gray-800 dark:text-gray-100">
+                    {item.title}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="p-2 text-sm text-gray-500 dark:text-gray-300 text-center">
+                {t("search.noResults")}
               </div>
-            ))
-          ) : (
-            <div className="p-2 text-sm text-gray-500 dark:text-gray-300 text-center">
-              لا توجد نتائج مطابقة
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </motion.div>
       )}
     </div>
   );

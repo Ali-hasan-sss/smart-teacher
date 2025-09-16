@@ -3,6 +3,7 @@ import { Grade } from "./grade";
 export interface LoginRequest {
   email: string;
   password: string;
+  methodType: string;
 }
 
 export interface RegisterRequest {
@@ -14,6 +15,7 @@ export interface RegisterRequest {
   birthdate: string;
   gradeId: number;
   password: string;
+  accountType: string;
 }
 
 export interface User {
@@ -24,6 +26,7 @@ export interface User {
   phoneNumber: string;
   birthdate: string;
   image?: string;
+  accountType?: string;
 }
 
 export interface AuthContextType {
@@ -33,7 +36,8 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (
     email: string,
-    password: string
+    password: string,
+    methodType: string
   ) => Promise<{ success: boolean; message: string }>;
   register: (
     userData: RegisterRequest
@@ -52,4 +56,5 @@ export interface AccountData {
   image: string;
   email: string;
   phoneNumber: string;
+  accountType?: string;
 }

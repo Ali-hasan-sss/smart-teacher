@@ -7,6 +7,12 @@ import { LanguageProvider } from "../contexts/language-context";
 import { Navbar } from "@/components/navbar";
 import { ReduxProvider } from "@/store/ReduxProvider";
 import Footer from "@/components/footer";
+import { Toaster } from "@/components/ui/toaster";
+import FirebaseNotifications from "@/components/FirebaseNotifications";
+import ClientOnly from "./wrapper";
+import GoogleTagManager, {
+  GoogleTagManagerNoScript,
+} from "@/components/GoogleTagManager";
 
 const cairo = Cairo({ subsets: ["arabic"] });
 
@@ -22,22 +28,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${cairo.className} bg-white dark:bg-secondary`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ReduxProvider>
-            <LanguageProvider>
-              <Navbar />
-              <div className="min-h-[80vh]">{children}</div>
-              <Footer />
-            </LanguageProvider>
-          </ReduxProvider>
-        </ThemeProvider>
+    <html lang="ar">
+      <head>
+        <link rel="icon" href="/images/logo.png" type="image/x-icon" />
+        <GoogleTagManager />
+      </head>
+      <body className={`${cairo.className} bg-white dark:bg-secondary `}>
+        <GoogleTagManagerNoScript />
+        <ClientOnly>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ReduxProvider>
+              <LanguageProvider>
+                <Navbar />
+                <Toaster />
+                <FirebaseNotifications />
+                <div className="min-h-[80vh] overflow-hidden">{children}</div>
+                <Footer />
+              </LanguageProvider>
+            </ReduxProvider>
+          </ThemeProvider>
+        </ClientOnly>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Environment, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import RobotModel from "./RobotModel";
 
 export function AnimatedRobot() {
@@ -17,18 +17,5 @@ export function AnimatedRobot() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1.5} />
-      <Environment preset="sunset" />
-      <RobotModel mouse={mouse} />
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        minPolarAngle={Math.PI / 3}
-        maxPolarAngle={Math.PI / 1.5}
-      />
-    </>
-  );
+  return <RobotModel mouse={mouse} />;
 }

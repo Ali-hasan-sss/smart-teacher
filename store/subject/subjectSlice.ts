@@ -1,6 +1,7 @@
 // src/store/slices/subjectSlice.ts
 import { createSlice } from "@reduxjs/toolkit";
 import { fetchSubjects } from "./subjectThunk";
+import { Course } from "@/types/course";
 
 interface Subject {
   title: string;
@@ -18,6 +19,7 @@ interface Subject {
   };
   createdAt: string;
   updatedAt: string;
+  courses: Course[];
 }
 
 interface SubjectState {

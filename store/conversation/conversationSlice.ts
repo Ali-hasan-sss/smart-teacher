@@ -7,6 +7,10 @@ import {
   markMessageLearned,
   fetchGeneralMessages,
   sendGeneralMessage,
+  deleteMessages,
+  deleteConversation,
+  sendMultiCourseInstruction,
+  sendQuizResult,
 } from "./conversationThunks";
 import {
   ConversationResponse,
@@ -20,6 +24,8 @@ interface ConversationState {
   loading: boolean;
   sendingMessage: boolean;
   sendingInstruction: boolean;
+  sendingMultiCourseInstruction: boolean;
+  sendingQuizResult: boolean;
   error: string | null;
 }
 
@@ -29,6 +35,8 @@ const initialState: ConversationState = {
   loading: false,
   sendingMessage: false,
   sendingInstruction: false,
+  sendingMultiCourseInstruction: false,
+  sendingQuizResult: false,
   error: null,
 };
 
@@ -254,7 +262,7 @@ const conversationSlice = createSlice({
         state.sendingInstruction = true; // ✅ بدء الإرسال
       })
       .addCase(sendInstruction.fulfilled, (state, action) => {
-        state.sendingInstruction = false; // ✅ انتهاء الإرسال
+        state.sendingInstruction = false;
         const text =
           typeof action.payload.data === "string" ? action.payload.data : "";
 
@@ -273,6 +281,66 @@ const conversationSlice = createSlice({
       })
       .addCase(sendInstruction.rejected, (state) => {
         state.sendingInstruction = false;
+      })
+      // ================== Delete Conversation ==================
+      .addCase(deleteConversation.fulfilled, (state, action) => {
+        const { courseId } = action.payload;
+
+        if (courseId === 0) {
+          state.messages = [];
+        } else {
+          state.conversations = state.conversations.filter(
+            (conv: any) => conv.courseId !== courseId
+          );
+          state.messages = [];
+        }
+      })
+
+      // ================== Delete Messages ==================
+      .addCase(deleteMessages.fulfilled, (state, action) => {
+        const ids = action.payload;
+        state.messages = state.messages.filter((msg) => !ids.includes(msg.id));
+      })
+
+      // ================== Send Multi-Course Instruction ==================
+      .addCase(sendMultiCourseInstruction.pending, (state) => {
+        state.sendingMultiCourseInstruction = true;
+        state.error = null;
+      })
+      .addCase(sendMultiCourseInstruction.fulfilled, (state, action) => {
+        state.sendingMultiCourseInstruction = false;
+        const text =
+          typeof action.payload.data === "string" ? action.payload.data : "";
+
+        if (text) {
+          state.messages.push({
+            id: Date.now(),
+            messageType: "Answer",
+            contentType: "Text",
+            content: text,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            order: state.messages.length + 1,
+            audioFile: null,
+          });
+        }
+      })
+      .addCase(sendMultiCourseInstruction.rejected, (state, action) => {
+        state.sendingMultiCourseInstruction = false;
+        state.error = action.payload as string;
+      })
+
+      // ================== Send Quiz Result ==================
+      .addCase(sendQuizResult.pending, (state) => {
+        state.sendingQuizResult = true;
+        state.error = null;
+      })
+      .addCase(sendQuizResult.fulfilled, (state, action) => {
+        state.sendingQuizResult = false;
+      })
+      .addCase(sendQuizResult.rejected, (state, action) => {
+        state.sendingQuizResult = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -1,8 +1,10 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { FileText } from "lucide-react";
 import React from "react";
+import { motion } from "framer-motion";
+import { Course } from "@/types/course";
 
-interface SubjectCardProps {
+export interface SubjectCardProps {
   subject: {
     id: number;
     title: string;
@@ -10,8 +12,9 @@ interface SubjectCardProps {
     image: string;
     coursesCount: number;
     pdfFile?: string;
+    courses: Course[];
   };
-  onStartStudy: (subjectId: number) => void;
+  onStartStudy: (subject: SubjectCardProps["subject"]) => void;
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onStartStudy }) => {
@@ -20,45 +23,55 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onStartStudy }) => {
     subject.description.split(" ").slice(0, 5).join(" ") + " ...";
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden flex flex-col">
-      <img
-        src={subject.image}
-        alt={subject.title}
-        className="h-48 object-cover w-full"
-      />
-      <div className="p-4 flex flex-col flex-1 justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              {subject.title}
-            </h2>
-            {subject.pdfFile && (
-              <a
-                href={subject.pdfFile}
-                download
-                className="text-blue-600 flex items-center gap-1 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                title={t("courses.downloadMaterial")}
-              >
-                <FileText size={20} />
-                <span className="mt-1">PDF</span>
-              </a>
-            )}
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: false, amount: 0.3 }}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      whileHover={{
+        scale: 1.01,
+      }}
+    >
+      <div className="w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden flex flex-col">
+        <img
+          src={subject.image}
+          alt={subject.title}
+          className="h-48 object-cover w-full"
+        />
+        <div className="p-4 flex flex-col flex-1 justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                {subject.title}
+              </h2>
+              {subject.pdfFile && (
+                <a
+                  href={subject.pdfFile}
+                  download
+                  className="text-blue-600 flex items-center gap-1 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                  title={t("courses.downloadMaterial")}
+                >
+                  <FileText size={20} />
+                  <span className="mt-1">PDF</span>
+                </a>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              {shortDescription}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t("courses.courseCount")} : ({subject.coursesCount})
+            </p>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-            {shortDescription}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {t("courses.courseCount")} : ({subject.coursesCount})
-          </p>
+          <button
+            onClick={() => onStartStudy(subject)}
+            className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+          >
+            {t("courses.exploer")}
+          </button>
         </div>
-        <button
-          onClick={() => onStartStudy(subject.id)}
-          className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-        >
-          {t("courses.exploer")}
-        </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

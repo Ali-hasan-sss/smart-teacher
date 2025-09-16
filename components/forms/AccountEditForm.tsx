@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import {
   Calendar,
   GraduationCap,
-  Mail,
   Phone,
   User,
   Camera,
@@ -31,6 +30,7 @@ export default function AccountEditForm({
   const [formData, setFormData] = useState<any>({
     ...data,
     gradeId: data.grade?.id?.toString() ?? "",
+    phoneNumber: data.phoneNumber || "",
   });
   const [uploading, setUploading] = useState(false);
 
@@ -168,31 +168,6 @@ export default function AccountEditForm({
         </h2>
         <div className="flex flex-col gap-2 mt-10 text-base text-gray-700 dark:text-gray-200 w-full max-w-xs mx-auto mb-6">
           <div className="flex items-center gap-2">
-            <Phone className="text-blue-300" />
-            <span className="font-semibold">{t("profile.phone")}:</span>
-            <input
-              type="tel"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              className="bg-transparent border-b border-blue-100 focus:border-blue-400 outline-none w-32 text-inherit"
-              placeholder={t("profile.phone")}
-              disabled={pending}
-            />
-          </div>
-          <div className="flex w-full  items-center gap-2">
-            <Mail className="inline text-blue-300" />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="bg-transparent w-full border-b border-blue-100 focus:border-blue-400 outline-none text-inherit"
-              placeholder={t("profile.email")}
-              disabled={pending}
-            />
-          </div>
-          <div className="flex items-center gap-2">
             <Calendar className="text-blue-300" />
             <span className="font-semibold">{t("profile.birthdate")}:</span>
             <input
@@ -205,15 +180,30 @@ export default function AccountEditForm({
             />
           </div>
           <div className="flex items-center gap-2">
-            <GraduationCap className="text-blue-300" />
-            <span className="font-semibold">{t("profile.grade")}:</span>
-            <GradeSelect
-              value={parseInt(formData.gradeId || "0")}
-              onChange={handleGradeChange}
-              placeholder="اختر الصف الدراسي"
-              className="mb-4"
+            <Phone className="text-blue-300" />
+            <span className="font-semibold">{t("profile.phoneNumber")}:</span>
+            <input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              className="bg-transparent border-b border-blue-100 focus:border-blue-400 outline-none w-32 text-inherit"
+              placeholder={t("profile.phoneNumber")}
+              disabled={pending}
             />
           </div>
+          {data.accountType !== "Parent" && (
+            <div className="flex items-center gap-2">
+              <GraduationCap className="text-blue-300" />
+              <span className="font-semibold">{t("profile.grade")}:</span>
+              <GradeSelect
+                value={parseInt(formData.gradeId || "0")}
+                onChange={handleGradeChange}
+                placeholder="اختر الصف الدراسي"
+                className="mb-4"
+              />
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mt-2">
           <Button

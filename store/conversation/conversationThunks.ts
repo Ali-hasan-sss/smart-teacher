@@ -61,7 +61,7 @@ export const sendMessage = createAsyncThunk<
 
 // إرسال رسالة تعليمات
 export const sendInstruction = createAsyncThunk<
-  InstructionResponse,
+  any,
   {
     reference: string;
     courseId: number;
@@ -144,3 +144,88 @@ export const sendGeneralMessage = createAsyncThunk<
     }
   }
 );
+
+// حذف محادثة (حسب courseId أو 0 للمحادثة العامة)
+export const deleteConversation = createAsyncThunk<
+  { courseId: number },
+  number
+>("conversation/deleteConversation", async (courseId, { rejectWithValue }) => {
+  try {
+    await axios.delete(`/api/Client/Conversation/${courseId}`);
+    return { courseId };
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data || "حدث خطأ أثناء حذف المحادثة");
+  }
+});
+
+// حذف رسائل متعددة
+export const deleteMessages = createAsyncThunk<number[], number[]>(
+  "conversation/deleteMessages",
+  async (ids, { rejectWithValue }) => {
+    try {
+      await axios.post(`/api/Client/Conversation/Delete/Messages`, { ids });
+      return ids;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || "حدث خطأ أثناء حذف الرسائل");
+    }
+  }
+);
+
+// إرسال تعليمات لأكثر من درس (توليد اختبار متعدد)
+export const sendMultiCourseInstruction = createAsyncThunk<
+  any,
+  {
+    courseId: number;
+    contentType: string;
+    instractions: string[];
+    courseIds: number[];
+    reference: string;
+    content: string;
+  }
+>(
+  "conversation/sendMultiCourseInstruction",
+  async (instructionData, { rejectWithValue }) => {
+    try {
+      const res = await axios.post<InstructionResponse>(
+        "/api/Client/Conversation/message/instruction/multi-course",
+        instructionData
+      );
+      return res.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data || "حدث خطأ أثناء إرسال التعليمات المتعددة"
+      );
+    }
+  }
+);
+
+// إرسال نتيجة الاختبار
+export const sendQuizResult = createAsyncThunk<
+  any,
+  {
+    result: string;
+    courseId: number;
+  }
+>("conversation/sendQuizResult", async (quizData, { rejectWithValue }) => {
+  try {
+    // إضافة timeout للتأكد من أن الطلب يظهر في Network
+    const res = await axios.post("/api/Client/Course/QuizResult", quizData, {
+      timeout: 10000, // 10 ثوان
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+      // إضافة هذه الإعدادات لضمان ظهور الطلب في Network
+      validateStatus: function (status) {
+        return status >= 200 && status < 300; // default
+      },
+    });
+
+    return res.data;
+  } catch (err: any) {
+    return rejectWithValue(
+      err.response?.data || "حدث خطأ أثناء إرسال نتيجة الاختبار"
+    );
+  }
+});

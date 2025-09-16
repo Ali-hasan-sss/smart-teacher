@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://coursemanage.runasp.net";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://181.214.100.217:3003";
 
 const instance = axios.create({
   baseURL: API_BASE_URL,
@@ -39,8 +39,7 @@ instance.interceptors.response.use(
     const originalRequest = err.config;
     const refreshToken = Cookies.get("refreshToken");
 
-    // لا تحاول تعمل refresh إذا كان الخطأ من طلب الـ refresh نفسه
-    if (originalRequest.url?.includes("/api/Client/Account/Refresh")) {
+    if (originalRequest.url?.includes("/api/Client/Account/RefreshToken")) {
       return Promise.reject(err);
     }
 
@@ -63,12 +62,28 @@ instance.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${API_BASE_URL}/api/Client/Account/Refresh`,
+          `${API_BASE_URL}/api/Client/Account/RefreshToken`,
           { refreshToken }
         );
 
+        console.log("Refresh token response:", res.data);
+
+        // التحقق من نجاح العملية
+        if (!res.data.data.token.success) {
+          throw new Error("Token refresh failed");
+        }
+
         const newToken = res.data.data.token.accessToken;
         const newRefreshToken = res.data.data.token.refreshTokenValue;
+
+        if (!newToken || !newRefreshToken) {
+          throw new Error("Invalid token data received");
+        }
+
+        console.log("Setting new tokens:", {
+          newToken: newToken.substring(0, 20) + "...",
+          newRefreshToken: newRefreshToken.substring(0, 20) + "...",
+        });
 
         Cookies.set("token", newToken, { secure: true, sameSite: "Strict" });
         Cookies.set("refreshToken", newRefreshToken, {
@@ -81,14 +96,15 @@ instance.interceptors.response.use(
 
         return instance(originalRequest);
       } catch (refreshErr) {
+        console.error("Token refresh error:", refreshErr);
         const axiosErr = refreshErr as AxiosError;
 
-        if (axiosErr.response?.status === 401) {
-          Cookies.remove("token");
-          Cookies.remove("refreshToken");
-          if (typeof window !== "undefined") {
-            window.location.href = "/login?expired=true";
-          }
+        // إزالة التوكنات في حالة فشل التحديث
+        Cookies.remove("token");
+        Cookies.remove("refreshToken");
+
+        if (typeof window !== "undefined") {
+          window.location.href = "/login?expired=true";
         }
 
         return Promise.reject(refreshErr);

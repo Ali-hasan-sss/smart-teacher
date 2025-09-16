@@ -37,26 +37,12 @@ export default function Hero({ isHome = true }: heroProps) {
           <div className="absolute bottom-20 right-48 w-[40px] h-[40px] bg-[#007CFF] rounded  hidden lg:flex  items-center justify-center">
             <ScreenShare className="text-white" />
           </div>
-          <Image
-            src={"/images/leftShip.png"}
-            alt="ship"
-            width={300}
-            height={300}
-            className="absolute top-0 left-0"
-          />
-          <Image
-            src={"/images/rihgtShip.png"}
-            alt="ship"
-            width={300}
-            height={300}
-            className="absolute bottom-0 right-0"
-          />
         </>
       )}
       <div className="max-w-7xl mx-auto z-50">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Content */}
-          <div className="text-center flex flex-col lg:mr-20 items-center gap-0 text-white max-w-2xl mx-1">
+          <div className="text-center flex flex-col lg:mr-20 items-center gap-0 text-white  mx-1">
             {!isHome && (
               <h1 className="text-4xl text-white font-bold leading-tight mt-6">
                 {t("aboutPage.title")}
@@ -72,35 +58,16 @@ export default function Hero({ isHome = true }: heroProps) {
               >
                 Smart Teacher
               </h1>
-              {isHome && (
-                <Image
-                  src={"/images/smallLogo.png"}
-                  alt="smallLogo"
-                  className="absolute top-0 right-0"
-                  width={70}
-                  height={70}
-                />
-              )}
             </div>
             {isHome && (
               <h1 className="text-3xl font-bold leading-tight mb-6">
-                {language === "ar" ? (
-                  <span className="text-white">
-                    تعلّم بذكاء مع{" "}
-                    <span className="text-transparent px-1 bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                      الذكاء
-                    </span>{" "}
-                    الاصطناعي
-                  </span>
-                ) : (
-                  <span className="text-white">
-                    Learn smart with{" "}
-                    <span className="text-transparent px-1 bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                      Artificial
-                    </span>{" "}
-                    Intelligence
-                  </span>
-                )}
+                <span className="text-white">
+                  {t("homePage.learnSmart")}{" "}
+                  <span className="text-transparent px-1 bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                    {t("homePage.artificialIntelligence")}
+                  </span>{" "}
+                  {t("homePage.artificialIntelligenceSuffix")}
+                </span>
               </h1>
             )}
 

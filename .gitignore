@@ -7,6 +7,11 @@
 /.next/
 /out/
 
+# SSL certificates for local development
+cert.key
+cert.crt
+ca.crt
+
 # production
 /build
 

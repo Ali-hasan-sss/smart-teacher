@@ -1,11 +1,11 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { register } from "@/store/auth/authThunks";
+import { login, register } from "@/store/auth/authThunks";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,30 +18,66 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
 import GradeSelect from "@/components/forms/GradeSelect";
+import { setTempAuth } from "@/store/auth/tempAuthSlice";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  defaults?: Partial<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    registerToken?: string;
+  }>;
+  switchTab: (tab: "login" | "register") => void;
+}
+
+export default function RegisterForm({
+  defaults,
+  switchTab,
+}: RegisterFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const auth = useSelector((state: RootState) => state.auth);
-
+  const [methodType, setMethodType] = useState<"basic" | "google">(
+    defaults && Object.keys(defaults).length > 0 ? "google" : "basic"
+  );
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
+    firstName: defaults?.firstName || "",
+    lastName: defaults?.lastName || "",
+    email: defaults?.email || "",
+    phoneNumber: defaults?.phoneNumber || "",
     birthdate: "",
     gradeId: "1",
     password: "",
     confirmPassword: "",
     image: "",
+    accountType: "client",
+    registerToken: defaults?.registerToken || "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const isLoading = auth.loading;
-
   const { t } = useTranslation();
   const router = useRouter();
+
+  useEffect(() => {
+    if (defaults && Object.keys(defaults).length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        ...defaults,
+        registerToken: defaults.registerToken || "",
+      }));
+      setMethodType("google");
+    }
+  }, [defaults]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -60,12 +96,10 @@ export default function RegisterForm() {
       setError(t("auth.fillAllFields"));
       return;
     }
-
     if (!formData.email.includes("@")) {
       setError(t("auth.invalidEmail"));
       return;
     }
-
     if (formData.password !== formData.confirmPassword) {
       setError(t("auth.passwordsDontMatch"));
       return;
@@ -80,18 +114,36 @@ export default function RegisterForm() {
       gradeId: Number.parseInt(formData.gradeId),
       password: formData.password,
       image: formData.image,
+      methodType: methodType,
+      accountType: formData.accountType,
+      registerToken: formData.registerToken,
     };
 
     const resultAction = await dispatch(register(registerData));
 
     if (register.fulfilled.match(resultAction)) {
-      // التسجيل تم بنجاح، انتقل للصفحة الرئيسية
-      router.push("/");
-    } else {
-      // حدث خطأ، اعرض رسالة الخطأ
-      // الرسالة غالبًا تكون في resultAction.payload أو resultAction.error.message
+      if (formData.registerToken) {
+        // تسجيل الدخول مباشرة عند التسجيل عبر Google
+        await dispatch(
+          login({
+            email: formData.email,
+            password: formData.password,
+            methodType: "basic",
+          })
+        );
+        router.push("/");
+      } else {
+        dispatch(
+          setTempAuth({ email: formData.email, password: formData.password })
+        );
+        router.push("/login/verify-email");
+      }
+    } else if (register.rejected.match(resultAction)) {
+      const payload = resultAction.payload as
+        | { message: string; code?: number }
+        | undefined;
       const errorMessage =
-        (resultAction.payload as string) ||
+        payload?.message ||
         resultAction.error?.message ||
         "حدث خطأ أثناء إنشاء الحساب";
       setError(errorMessage);
@@ -99,8 +151,8 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md bg-third dark:bg-gray-700">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
             {t("auth.registerTitle")}
@@ -149,7 +201,7 @@ export default function RegisterForm() {
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="Enter your email"
                 required
-                disabled={isLoading}
+                disabled={isLoading || !!defaults?.email} // منع تعديل الايميل إذا جاء من جوجل
               />
             </div>
 
@@ -166,18 +218,41 @@ export default function RegisterForm() {
                 disabled={isLoading}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="accountType">{t("auth.accountType")}</Label>
+              <Select
+                value={formData.accountType}
+                onValueChange={(value) =>
+                  handleInputChange("accountType", value)
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("auth.selectAccountType")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="client">{t("auth.student")}</SelectItem>
+                  <SelectItem value="teacher">{t("auth.teacher")}</SelectItem>
+                  <SelectItem value="parent">{t("auth.parent")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="birthdate">{t("auth.grade")}</Label>
-                <GradeSelect
-                  value={parseInt(formData.gradeId)}
-                  onChange={(value) =>
-                    handleInputChange("gradeId", value.toString())
-                  }
-                  placeholder="اختر الصف الدراسي"
-                  className="mb-4"
-                />
-              </div>
+              {formData.accountType !== "parent" && (
+                <div className="space-y-2">
+                  <Label htmlFor="gradeId">{t("auth.grade")}</Label>
+                  <GradeSelect
+                    value={parseInt(formData.gradeId)}
+                    onChange={(value) =>
+                      handleInputChange("gradeId", value.toString())
+                    }
+                    placeholder="اختر الصف الدراسي"
+                    className="mb-4"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="birthdate">{t("auth.birthdate")}</Label>
                 <Input
@@ -191,6 +266,7 @@ export default function RegisterForm() {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="password">{t("auth.password")}</Label>
@@ -248,23 +324,20 @@ export default function RegisterForm() {
 
             <Button
               type="submit"
-              className="w-full bg-primary text-gray-800 hover:bg-blue-400 dark:text-white dark:bg-third "
+              className="w-full bg-blue-700 text-gray-800 hover:bg-blue-600 text-white "
               disabled={isLoading}
             >
               {isLoading ? "Creating Account..." : t("auth.registerButton")}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t("auth.alreadyHaveAccount")}{" "}
-              <Link
-                href="/login"
-                className="text-blue-600 hover:text-blue-500 font-medium"
-              >
-                {t("auth.loginHere")}
-              </Link>
-            </p>
+          <div className="pt-3 w-full text-center">
+            <button
+              className="text-blue-500 px-2"
+              onClick={() => switchTab("login")}
+            >
+              {t("auth.loginButton")}
+            </button>
+            <span> {t("auth.alreadyHaveAccount")}</span>
           </div>
         </CardContent>
       </Card>

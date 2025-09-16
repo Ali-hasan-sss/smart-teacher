@@ -27,11 +27,13 @@ export interface Course {
   title: string;
   description: string;
   subjectId: number;
+  gradetId: number;
+  isFree: boolean;
   image: string;
   courseFile: string;
   bookmarked: boolean;
   enableAI: boolean;
-  learningFile: string;
+  learningFileExist: boolean;
   createdAt: string;
   updatedAt: string;
   type: string;

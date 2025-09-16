@@ -1,5 +1,6 @@
 "use client";
 
+import { setUser } from "@/store/auth/authSlice";
 import {
   createContext,
   useContext,
@@ -7,6 +8,7 @@ import {
   useState,
   ReactNode,
 } from "react";
+import { useDispatch } from "react-redux";
 
 export type Language = "en" | "ar";
 
@@ -21,7 +23,21 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language | null>(null);
+  const [language, setLanguageState] = useState<Language | null>("ar");
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const userJson = localStorage.getItem("user");
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        dispatch(setUser(user));
+      } catch (err) {
+        console.error("Failed to parse user from localStorage:", err);
+      }
+    }
+  }, [dispatch]);
 
   const setLanguage = (lang: Language) => {
     localStorage.setItem("lang", lang);
@@ -29,8 +45,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const savedLang = localStorage.getItem("lang") as Language;
-    setLanguageState(savedLang || "ar");
+    if (savedLang) setLanguageState(savedLang);
   }, []);
 
   // تغيير اتجاه الموقع بناءً على اللغة

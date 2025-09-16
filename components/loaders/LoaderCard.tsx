@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { motion } from "framer-motion";
 
 export default function LoaderCard() {
   const [isDark, setIsDark] = useState(false);
@@ -14,44 +15,54 @@ export default function LoaderCard() {
   }, []);
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-900 rounded-xl shadow space-y-4">
-      <Skeleton
-        height={200}
-        borderRadius={10}
-        baseColor={isDark ? "#959191ff" : "#e0e0e0"}
-        highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
-      />
+    <motion.div
+      initial={{ opacity: 0, x: -50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: false, amount: 0.3 }}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      whileHover={{
+        scale: 1.01,
+      }}
+    >
+      <div className="p-4 bg-white dark:bg-gray-900 rounded-xl shadow space-y-4">
+        <Skeleton
+          height={200}
+          borderRadius={10}
+          baseColor={isDark ? "#959191ff" : "#e0e0e0"}
+          highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
+        />
 
-      {/* عنوان الدرس */}
-      <Skeleton
-        height={24}
-        width="70%"
-        baseColor={isDark ? "#959191ff" : "#e0e0e0"}
-        highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
-      />
+        {/* عنوان الدرس */}
+        <Skeleton
+          height={24}
+          width="70%"
+          baseColor={isDark ? "#959191ff" : "#e0e0e0"}
+          highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
+        />
 
-      {/* وصف مختصر */}
-      <Skeleton
-        height={18}
-        width="90%"
-        baseColor={isDark ? "#959191ff" : "#e0e0e0"}
-        highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
-      />
-      <Skeleton
-        height={18}
-        width="60%"
-        baseColor={isDark ? "#959191ff" : "#e0e0e0"}
-        highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
-      />
+        {/* وصف مختصر */}
+        <Skeleton
+          height={18}
+          width="90%"
+          baseColor={isDark ? "#959191ff" : "#e0e0e0"}
+          highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
+        />
+        <Skeleton
+          height={18}
+          width="60%"
+          baseColor={isDark ? "#959191ff" : "#e0e0e0"}
+          highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
+        />
 
-      {/* زر أو رابط */}
-      <Skeleton
-        height={40}
-        width="100%"
-        borderRadius={8}
-        baseColor={isDark ? "#959191ff" : "#e0e0e0"}
-        highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
-      />
-    </div>
+        {/* زر أو رابط */}
+        <Skeleton
+          height={40}
+          width="100%"
+          borderRadius={8}
+          baseColor={isDark ? "#959191ff" : "#e0e0e0"}
+          highlightColor={isDark ? "#f5f5f5ff" : "#f5f5f5"}
+        />
+      </div>
+    </motion.div>
   );
 }
