@@ -1,21 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "@/lib/axios";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchPlans } from "@/store/subscription/subscriptionThunks";
+import type { RootState } from "@/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard } from "lucide-react";
 import LoaderCard from "./loaders/LoaderCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
-
-type Plan = {
-  id: number;
-  title: string;
-  type: string;
-  price: number;
-  expiredAt: string;
-};
 interface PlansModalProps {
   courseId: number;
   gradeId: number;
@@ -28,25 +22,16 @@ export default function PlansModal({
   onClose,
 }: PlansModalProps) {
   const { t } = useTranslation();
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const { plans, plansLoading } = useAppSelector((state: RootState) => ({
+    plans: state.subscription.plans,
+    plansLoading: state.subscription.plansLoading,
+  }));
   const [subscribingId, setSubscribingId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get("/api/Client/Plan");
-        setPlans(res.data.data.items || []);
-      } catch (err) {
-        console.error("Error fetching plans:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlans();
-  }, []);
+    dispatch(fetchPlans());
+  }, [dispatch]);
 
   const handleSubscribe = async (
     planId: number,
@@ -163,7 +148,7 @@ export default function PlansModal({
         {t("plan.available")}
       </h1>
 
-      {loading ? (
+      {plansLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, index) => (
             <LoaderCard key={index} />
@@ -171,7 +156,7 @@ export default function PlansModal({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {plans.map((plan) => (
+          {plans.map((plan: any) => (
             <Card
               key={plan.id}
               className="rounded-2xl shadow-md hover:shadow-xl transition bg-third min-h-[250px] flex flex-col justify-between"

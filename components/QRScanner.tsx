@@ -9,9 +9,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Camera, X, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Camera,
+  X,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import jsQR from "jsqr";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -20,114 +28,167 @@ interface QRScannerProps {
 }
 
 export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [hasScanned, setHasScanned] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
+  const qrCodeElementId = "qr-scanner-element";
 
-  useEffect(() => {
-    if (isOpen) {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-    return () => stopCamera();
-  }, [isOpen]);
+  const handleScanSuccess = async (qrCodeMessage: string) => {
+    if (hasScanned) return;
+    setHasScanned(true);
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setIsScanning(true);
-        scanQR();
+    console.log("QR Code detected:", qrCodeMessage);
+
+    // Stop scanner
+    if (scanner) {
+      try {
+        scanner.clear();
+      } catch (error) {
+        console.error("Error clearing scanner:", error);
       }
-    } catch (err) {
-      console.error("Camera error:", err);
-      setError("تعذر فتح الكاميرا");
     }
-  };
 
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach((t) => t.stop());
-      videoRef.current.srcObject = null;
-    }
-    setIsScanning(false);
-  };
-
-  const scanQR = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-
-    if (!context) return;
-
-    const scan = () => {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const imageData = context.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-        if (code) {
-          console.log("QR Code detected:", code.data);
-          onScan(code.data);
-          stopCamera(); // مهم: نوقف الكاميرا
-          onClose();
-          return;
-        }
-      } else if (isScanning) {
-        requestAnimationFrame(scan);
-      }
-    };
-
-    scan();
-  };
-
-  const handleStopScan = () => {
-    console.log("Manual stop scan requested");
-    setIsScanning(false);
-    stopCamera();
+    setScanResult(qrCodeMessage);
+    onScan(qrCodeMessage.trim());
     onClose();
   };
 
-  console.log("QRScanner render, isOpen:", isOpen);
+  const startScanner = async () => {
+    if (scanner || isInitializing) return;
 
-  if (!isOpen) return null;
+    setIsInitializing(true);
+    console.log("Starting QR scanner...");
+
+    try {
+      const newScanner = new Html5Qrcode(qrCodeElementId);
+
+      // Start camera
+      await newScanner.start(
+        { facingMode: "user" }, // الكاميرا الأمامية
+        {
+          fps: 10,
+          qrbox: { width: 200, height: 200 },
+          aspectRatio: 1.0,
+          disableFlip: true,
+        },
+        handleScanSuccess,
+        (errorMessage: string) => {
+          // تجاهل أخطاء المسح العادية
+          if (
+            !errorMessage.includes("QR code parse error") &&
+            !errorMessage.includes("No QR code found") &&
+            !errorMessage.includes("NotFoundException")
+          ) {
+            console.warn("QR Scan error:", errorMessage);
+          }
+        }
+      );
+
+      setScanner(newScanner);
+      setIsInitializing(false);
+      console.log("Camera started successfully");
+    } catch (error) {
+      console.error("Camera initialization failed:", error);
+      setError(t("qrScanner.camera_error") || "تعذر فتح الكاميرا");
+      setIsInitializing(false);
+    }
+  };
+
+  const stopScanner = () => {
+    console.log("Stopping scanner...");
+    if (scanner) {
+      try {
+        scanner.stop().catch((error: any) => {
+          console.warn("Error stopping scanner:", error);
+        });
+        scanner.clear();
+      } catch (error) {
+        console.warn("Error in stopScanner:", error);
+      }
+      setScanner(null);
+    }
+    setScanResult(null);
+    setHasScanned(false);
+    setIsInitializing(false);
+    setShowScanner(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      console.log("QR Scanner modal opened");
+      // Reset state
+      setHasScanned(false);
+      setScanResult(null);
+      setError(null);
+
+      // Show scanner container first
+      setShowScanner(true);
+    } else {
+      console.log("QR Scanner modal closed");
+      setShowScanner(false);
+      stopScanner();
+    }
+
+    return () => {
+      console.log("QR Scanner component unmounting, cleaning up...");
+      if (scanner) {
+        scanner.stop().catch(() => {});
+        try {
+          scanner.clear();
+        } catch (error) {
+          console.warn("Error clearing scanner on unmount:", error);
+        }
+      }
+    };
+  }, [isOpen]);
+
+  // بدء المسح عند ظهور الحاوي
+  useEffect(() => {
+    if (showScanner && isOpen && !scanner && !isInitializing) {
+      console.log("Scanner container ready, starting scanner...");
+      setTimeout(startScanner, 500);
+    }
+  }, [showScanner, isOpen, scanner, isInitializing]);
+
+  const handleClose = () => {
+    console.log("Handling modal close...");
+    stopScanner();
+    setTimeout(() => {
+      onClose();
+    }, 100);
+  };
+
+  const handleTryAgain = () => {
+    stopScanner();
+    setTimeout(() => {
+      setHasScanned(false);
+      setScanResult(null);
+      setShowScanner(true);
+    }, 300);
+  };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          stopCamera();
-          onClose();
-        }
-      }}
-    >
-      <DialogContent className="max-w-md">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-sm w-full mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            {t("qrScanner.title") || "مسح رمز QR"}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              {t("qrScanner.title") || "مسح رمز QR"}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="h-6 w-6"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           <DialogDescription>
             {t("qrScanner.scanDescription") || "وجه الكاميرا نحو رمز QR للمسح"}
           </DialogDescription>
@@ -135,78 +196,89 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
         <div className="space-y-4">
           {error && (
-            <div className="text-red-600 text-sm text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <p className="mb-2">{error}</p>
-              <Button
-                onClick={startCamera}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                إعادة المحاولة
-              </Button>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p>{error}</p>
+                  <Button onClick={handleTryAgain} variant="outline" size="sm">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    إعادة المحاولة
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {scanResult && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                <p className="font-medium">تم المسح بنجاح!</p>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isInitializing && (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>{t("qrScanner.loading") || "جاري تحميل الكاميرا..."}</span>
             </div>
           )}
 
-          {isLoading ? (
-            <div className="text-center space-y-4">
-              <div className="w-full h-64 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                <div className="text-gray-600 dark:text-gray-400">
-                  <Camera className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                  <p className="text-sm">
-                    {t("qrScanner.loading") || "جاري تحميل الكاميرا..."}
-                  </p>
-                  <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
-                    قد يستغرق هذا بضع ثوانٍ...
-                  </p>
-                  <div className="mt-3">
-                    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  </div>
-                  <p className="text-xs mt-2 text-gray-400 dark:text-gray-600">
-                    تأكد من السماح للكاميرا في إعدادات المتصفح
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
+          {showScanner && !scanResult && (
             <div className="space-y-4">
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  className="w-full h-64 bg-black rounded-lg object-cover"
-                  playsInline
-                  muted
-                  autoPlay
-                  webkit-playsinline="true"
-                  style={{ transform: "scaleX(-1)" }} // عكس الصورة لتبدو طبيعية
+              <div className="relative w-full max-w-sm mx-auto">
+                <div
+                  id={qrCodeElementId}
+                  className="w-full h-[300px] bg-black rounded-xl overflow-hidden border-2 border-gray-200"
                 />
-                <canvas ref={canvasRef} className="hidden" />
-                <div className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none">
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-blue-500 rounded-lg">
-                    <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-blue-500 rounded-br-lg"></div>
+                {/* QR Frame Overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-48 h-48 border-2 border-white rounded-lg shadow-lg">
+                      <div className="w-full h-full border-2 border-dashed border-white/50 rounded-lg"></div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  {t("qrScanner.scanning") || "وجه الكاميرا نحو رمز QR"}
+              <div className="text-center space-y-2">
+                <p className="text-sm text-gray-600">
+                  📱 ضع رمز QR داخل الإطار
                 </p>
-                <Button
-                  onClick={handleStopScan}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {t("qrScanner.stopScan") || "إيقاف المسح"}
-                </Button>
+                <p className="text-xs text-gray-500">
+                  تأكد من وضوح الرمز وإضاءة جيدة
+                </p>
               </div>
             </div>
           )}
+
+          <div className="flex gap-2 pt-4">
+            {scanResult ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleTryAgain}
+                  className="flex-1"
+                >
+                  مسح آخر
+                </Button>
+                <Button onClick={handleClose} className="flex-1">
+                  تم
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="w-full"
+              >
+                <X className="h-4 w-4 mr-2" />
+                إلغاء
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

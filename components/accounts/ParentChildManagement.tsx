@@ -167,10 +167,30 @@ export default function ParentChildManagement({
   }, [isOpen, showInTab]);
 
   const handleQRScan = (qrCode: string) => {
+    console.log("QR Code scanned:", qrCode);
     setQrInput(qrCode);
     setShowQRScanner(false);
-    handleAddParent();
-    toast.success(t("qrScanner.scanSuccess"));
+
+    // إرسال الطلب مباشرة مع الكود المسحوح
+    if (qrCode.trim()) {
+      dispatch(addParentChild({ qruId: qrCode.trim() })).then((result) => {
+        if (result.payload?.isSuccess) {
+          toast.success(t("parentChild.child_added_successfully"));
+          // إعادة تحميل البيانات
+          if (isClient) {
+            dispatch(getParents());
+          } else if (isParent) {
+            dispatch(getChildren());
+          }
+        } else {
+          toast.error(t("parentChild.child_addition_failed"));
+        }
+      });
+    } else {
+      toast.error(t("parentChild.invalid_qr_code"));
+    }
+
+    setQrInput("");
   };
 
   const handleRemoveParent = (parentId: number, parentName: string) => {

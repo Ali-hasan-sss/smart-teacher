@@ -1,5 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createSubscription, fetchSubscriptions } from "./subscriptionThunks";
+import {
+  createSubscription,
+  fetchSubscriptions,
+  fetchPlans,
+} from "./subscriptionThunks";
 
 interface Account {
   firstName: string;
@@ -44,16 +48,30 @@ export interface Subscription {
   sessionId: string | null;
 }
 
+export interface Plan {
+  id: number;
+  title: string;
+  type: string;
+  price: number;
+  expiredAt: string;
+}
+
 interface SubscriptionState {
   items: Subscription[];
+  plans: Plan[];
   loading: boolean;
+  plansLoading: boolean;
   error: string | null;
+  plansError: string | null;
 }
 
 const initialState: SubscriptionState = {
   items: [],
+  plans: [],
   loading: false,
+  plansLoading: false,
   error: null,
+  plansError: null,
 };
 
 const subscriptionSlice = createSlice({
@@ -87,6 +105,20 @@ const subscriptionSlice = createSlice({
     builder.addCase(fetchSubscriptions.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
+    });
+
+    // Plans cases
+    builder.addCase(fetchPlans.pending, (state) => {
+      state.plansLoading = true;
+      state.plansError = null;
+    });
+    builder.addCase(fetchPlans.fulfilled, (state, action) => {
+      state.plansLoading = false;
+      state.plans = action.payload || [];
+    });
+    builder.addCase(fetchPlans.rejected, (state, action) => {
+      state.plansLoading = false;
+      state.plansError = action.payload as string;
     });
   },
 });

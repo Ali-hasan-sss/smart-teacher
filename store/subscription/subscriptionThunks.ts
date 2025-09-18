@@ -35,3 +35,15 @@ export const fetchSubscriptions = createAsyncThunk(
     }
   }
 );
+
+export const fetchPlans = createAsyncThunk(
+  "subscription/fetchPlans",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("/api/Client/Plan");
+      return response.data.data.items;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);

@@ -22,6 +22,7 @@ import {
   Phone,
   ShieldQuestion,
   LogIn,
+  CreditCard,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { RootState } from "@/store";
@@ -65,6 +66,9 @@ export function Navbar() {
     { name: t("navigation.home"), href: "/", icon: Home },
     ...(accountType !== "Parent"
       ? [{ name: t("navigation.subjects"), href: "/subjects", icon: BookOpen }]
+      : []),
+    ...(accountType !== "Parent"
+      ? [{ name: t("navigation.plans"), href: "/plans", icon: CreditCard }]
       : []),
     { name: t("navigation.contact"), href: "/contact", icon: Phone },
     { name: t("navigation.about"), href: "/about-us", icon: ShieldQuestion },
