@@ -84,7 +84,16 @@ export default function LoginForm({
     );
 
     if (login.fulfilled.match(resultAction)) {
-      window.location.replace("/");
+      // التحقق من وجود صفحة محفوظة للعودة إليها
+      if (typeof window !== "undefined") {
+        const redirectPath = localStorage.getItem("redirectAfterLogin");
+        if (redirectPath) {
+          localStorage.removeItem("redirectAfterLogin");
+          window.location.replace(redirectPath);
+        } else {
+          window.location.replace("/");
+        }
+      }
     } else if (login.rejected.match(resultAction)) {
       const payload = resultAction.payload as any;
       const message =
@@ -117,7 +126,16 @@ export default function LoginForm({
       );
 
       if (login.fulfilled.match(resultAction)) {
-        window.location.replace("/");
+        // التحقق من وجود صفحة محفوظة للعودة إليها
+        if (typeof window !== "undefined") {
+          const redirectPath = localStorage.getItem("redirectAfterLogin");
+          if (redirectPath) {
+            localStorage.removeItem("redirectAfterLogin");
+            window.location.replace(redirectPath);
+          } else {
+            window.location.replace("/");
+          }
+        }
       } else if (login.rejected.match(resultAction)) {
         console.log("Rejected action:", resultAction);
         const payload = resultAction.payload as any;

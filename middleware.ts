@@ -28,6 +28,5 @@ export const config = {
     "/courses/:path*",
     "/subjects/:path*",
     "/bookmarkList/:path*",
-    "/plans/:path*",
   ],
 };

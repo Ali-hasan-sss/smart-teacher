@@ -17,6 +17,7 @@ import {
   CheckCircle,
   AlertCircle,
   RefreshCw,
+  RotateCcw,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Html5Qrcode } from "html5-qrcode";
@@ -34,6 +35,9 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const [isInitializing, setIsInitializing] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentCamera, setCurrentCamera] = useState<"environment" | "user">(
+    "environment"
+  );
   const { t } = useTranslation();
   const qrCodeElementId = "qr-scanner-element";
 
@@ -68,7 +72,7 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
       // Start camera
       await newScanner.start(
-        { facingMode: "user" }, // الكاميرا الأمامية
+        { facingMode: currentCamera }, // استخدام الكاميرا المحددة
         {
           fps: 10,
           qrbox: { width: 200, height: 200 },
@@ -171,6 +175,24 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
     }, 300);
   };
 
+  const handleSwitchCamera = async () => {
+    console.log("Switching camera...");
+
+    // إيقاف المسح الحالي
+    stopScanner();
+
+    // تبديل نوع الكاميرا
+    const newCamera = currentCamera === "environment" ? "user" : "environment";
+    setCurrentCamera(newCamera);
+
+    // إعادة بدء المسح مع الكاميرا الجديدة
+    setTimeout(() => {
+      setHasScanned(false);
+      setScanResult(null);
+      setShowScanner(true);
+    }, 500);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm w-full mx-4">
@@ -241,6 +263,24 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                     </div>
                   </div>
                 </div>
+
+                {/* Camera Switch Button */}
+                <div className="absolute top-4 right-4">
+                  <Button
+                    onClick={handleSwitchCamera}
+                    variant="secondary"
+                    size="icon"
+                    className="w-10 h-10 bg-black/70 hover:bg-black/80 text-white border-0"
+                    disabled={isInitializing}
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                  </Button>
+                </div>
+
+                {/* Camera Type Indicator */}
+                <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs">
+                  {currentCamera === "environment" ? "📷 خلفية" : "🤳 أمامية"}
+                </div>
               </div>
 
               <div className="text-center space-y-2">
@@ -248,7 +288,10 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
                   📱 ضع رمز QR داخل الإطار
                 </p>
                 <p className="text-xs text-gray-500">
-                  تأكد من وضوح الرمز وإضاءة جيدة
+                  💡 تأكد من وضوح الرمز وإضاءة جيدة
+                </p>
+                <p className="text-xs text-blue-600">
+                  🔄 اضغط على زر التبديل لتغيير الكاميرا
                 </p>
               </div>
             </div>

@@ -24,6 +24,7 @@ import LoaderCard from "./loaders/LoaderCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
 import { Grade } from "@/types/grade";
+import { useRouter } from "next/navigation";
 
 interface PlansViewProps {
   gradeId?: number;
@@ -33,6 +34,7 @@ interface PlansViewProps {
 export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{
     id: number;
@@ -40,6 +42,31 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     title: string;
   } | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
+
+  // البيانات الثابتة للخطط
+  const staticPlans = [
+    {
+      id: 1,
+      title: "الخطة الشهرية",
+      type: "Monthly",
+      price: 15.0,
+      expiredAt: "2025-10-22 05:59",
+    },
+    {
+      id: 2,
+      title: "الخطة الفصلية",
+      type: "Semesterly",
+      price: 45.0,
+      expiredAt: "2025-12-31 00:00",
+    },
+    {
+      id: 3,
+      title: "الخطة السنوية",
+      type: "Yearly",
+      price: 75.0,
+      expiredAt: "2026-07-31 00:00",
+    },
+  ];
 
   const { plans, plansLoading, plansError } = useAppSelector(
     (state: RootState) => ({
@@ -56,16 +83,37 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     })
   );
 
+  const { user, token } = useAppSelector((state: RootState) => ({
+    user: state.auth.user,
+    token: state.auth.token,
+  }));
+
+  // التحقق من حالة تسجيل الدخول
+  const isLoggedIn = Boolean(user && token);
+
   useEffect(() => {
-    dispatch(fetchPlans());
-    dispatch(fetchAllGrades());
-  }, [dispatch]);
+    // تحميل البيانات فقط للمستخدمين المسجلين
+    if (isLoggedIn) {
+      dispatch(fetchPlans());
+      dispatch(fetchAllGrades());
+    }
+  }, [dispatch, isLoggedIn]);
 
   const handleSubscribe = async (
     planId: number,
     price: number,
     title: string
   ) => {
+    // إذا لم يكن المستخدم مسجل دخول، توجيهه لصفحة تسجيل الدخول
+    if (!isLoggedIn) {
+      // حفظ الصفحة الحالية لتوجيه المستخدم إليها بعد تسجيل الدخول
+      if (typeof window !== "undefined") {
+        localStorage.setItem("redirectAfterLogin", window.location.pathname);
+      }
+      router.push("/login");
+      return;
+    }
+
     if (onSubscribe) {
       onSubscribe(planId, price, title);
       return;
@@ -269,8 +317,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       // فصلية - 4 أشهر
       currentDate.setMonth(currentDate.getMonth() + 4);
     } else if (type.includes("سن") || type.includes("year")) {
-      // سنوية - 9 أشهر
-      currentDate.setMonth(currentDate.getMonth() + 9);
+      // سنوية - 12 شهر
+      currentDate.setMonth(currentDate.getMonth() + 12);
     } else {
       // افتراضي - شهر واحد
       currentDate.setMonth(currentDate.getMonth() + 1);
@@ -283,7 +331,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     });
   };
 
-  if (plansError) {
+  if (plansError && isLoggedIn) {
     return (
       <div className="text-center mt-[100px] py-8">
         <p className="text-red-500">{t("plan.loading_error")}</p>
@@ -312,7 +360,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Plans Grid */}
-        {plansLoading ? (
+        {plansLoading && isLoggedIn ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {Array.from({ length: 3 }).map((_, index) => (
               <LoaderCard key={index} />
@@ -320,7 +368,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {plans.map((plan, index) => {
+            {(isLoggedIn ? plans : staticPlans).map((plan, index) => {
               const IconComponent = getPlanIcon(plan.type);
               const expiryDate = calculateExpiryDate(plan.type);
 
@@ -357,8 +405,28 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                           {plan.title}
                         </h3>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                         {plan.type}
+                      </p>
+                      {/* وصف مخصص لكل خطة */}
+                      <p className="text-gray-500 dark:text-gray-400 text-xs">
+                        {(() => {
+                          const type = plan.type.toLowerCase();
+                          if (type.includes("شهر") || type.includes("month")) {
+                            return t("plans.monthly_description");
+                          } else if (
+                            type.includes("فصل") ||
+                            type.includes("semester")
+                          ) {
+                            return t("plans.semester_description");
+                          } else if (
+                            type.includes("سن") ||
+                            type.includes("year")
+                          ) {
+                            return t("plans.yearly_description");
+                          }
+                          return t("plans.monthly_description");
+                        })()}
                       </p>
                     </div>
 
@@ -377,14 +445,14 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                       </p>
                     </div>
 
-                    {/* Features List */}
+                    {/* Features List - نفس المميزات لجميع الخطط */}
                     <div className="mb-6">
                       <ul className="space-y-2">
                         {[
-                          t("plans.feature1"),
-                          t("plans.feature2"),
-                          t("plans.feature3"),
-                          t("plans.feature4"),
+                          t("plans.premium_feature1"),
+                          t("plans.premium_feature2"),
+                          t("plans.premium_feature3"),
+                          t("plans.premium_feature4"),
                         ].map((feature, featureIndex) => (
                           <li
                             key={featureIndex}
@@ -429,8 +497,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           </div>
         )}
 
-        {/* Empty State */}
-        {!plansLoading && plans.length === 0 && (
+        {/* Empty State - فقط للمستخدمين المسجلين */}
+        {!plansLoading && isLoggedIn && plans.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <svg

@@ -308,6 +308,16 @@ export default {
     feature2: "24/7 technical support",
     feature3: "Certified completion certificate",
     feature4: "Personal follow-up with teachers",
+    premium_feature1: "Full and unlimited access to all content",
+    premium_feature2: "Instant content updates",
+    premium_feature3: "Comprehensive follow-up reports",
+    premium_feature4: "Technical support and continuous educational follow-up",
+    monthly_description:
+      "Ideal for those who want to try the platform or need short-term use",
+    semester_description:
+      "Ideal for those who want to cover a complete semester curriculum",
+    yearly_description:
+      "Ideal for those who want to benefit from the platform throughout the academic year",
     no_plans: "No plans available at the moment",
     check_later: "Please try again later",
     why_choose_smart_teacher: "Why Choose Smart Teacher?",
@@ -333,6 +343,9 @@ export default {
     scanSuccess: "QR code scanned successfully",
     camera_error: "Unable to access camera",
     element_not_found: "Scanner element not found",
+    switch_camera: "Switch Camera",
+    back_camera: " Back",
+    front_camera: " Front",
     instructions: "Press start to scan QR code",
     startScan: "Start Scan",
     cameraError: "Error accessing camera",
@@ -458,6 +471,9 @@ export default {
     title: "My Subscriptions",
     childrenSubscriptions: "Children's Subscriptions",
     subtitle: "Manage your subscriptions and enrolled grades",
+    children_subscriptions: "Children Subscriptions",
+    children_subtitle:
+      "Browse all your children's active and expired subscriptions",
     // Toast messages
     profileUpdated: "Profile updated successfully",
     profileUpdateFailed: "Failed to update profile",
@@ -491,6 +507,9 @@ export default {
     verification_code_sent: "Verification code sent successfully",
     no_subscriptions: "No Subscriptions",
     no_subscriptions_description: "You haven't subscribed to any grade yet",
+    no_children_subscriptions: "No Children Subscriptions",
+    no_children_subscriptions_description:
+      "Your children haven't subscribed to any grade yet",
     active: "Active",
     expired: "Expired",
     first_semester: "First Semester",

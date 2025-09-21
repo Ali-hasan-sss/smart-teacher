@@ -1,19 +1,75 @@
 "use client";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Calendar, GraduationCap, CreditCard, Clock } from "lucide-react";
+import { Calendar, GraduationCap, CreditCard, Clock, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trackPageView } from "@/utils/gtm";
 import { useEffect } from "react";
+import { fetchParentHome } from "@/store/home/homeThunks";
 
-export default function SubscriptionsView() {
+interface SubscriptionsViewProps {
+  accountType?: string;
+}
+
+export default function SubscriptionsView({
+  accountType,
+}: SubscriptionsViewProps) {
   const { t } = useTranslation();
-  const { items: subscriptions, loading } = useSelector(
+  const dispatch = useDispatch();
+
+  // تحديد نوع الحساب
+  const { user } = useSelector((state: RootState) => state.account);
+  const finalAccountType = accountType || user?.accountType || "client";
+  const isParent = finalAccountType.toLowerCase() === "parent";
+
+  console.log("Props accountType:", accountType);
+  console.log("User accountType:", user?.accountType);
+  console.log("Final accountType:", finalAccountType, "isParent:", isParent);
+
+  // جلب الاشتراكات حسب نوع الحساب
+  const { items: regularSubscriptions, loading: regularLoading } = useSelector(
     (state: RootState) => state.subscription
   );
+
+  const { parentData, parentLoading } = useSelector(
+    (state: RootState) => state.home
+  );
+
+  // تحديد البيانات المناسبة
+  console.log("SubscriptionsView Debug:", {
+    isParent,
+    parentData,
+    children: parentData?.children,
+    childrenCount: parentData?.children?.length,
+    regularSubscriptions: regularSubscriptions?.length,
+  });
+
+  const subscriptions = isParent
+    ? parentData?.children?.flatMap((child) => {
+        console.log(
+          "Processing child:",
+          child.firstName,
+          "subscriptions:",
+          child.subscriptions?.length
+        );
+        return (
+          child.subscriptions?.map((sub) => ({
+            ...sub,
+            childInfo: {
+              firstName: child.firstName,
+              lastName: child.lastName,
+              image: child.image,
+            },
+          })) || []
+        );
+      }) || []
+    : regularSubscriptions;
+
+  console.log("Final subscriptions:", subscriptions?.length, subscriptions);
+  const loading = isParent ? parentLoading : regularLoading;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -37,7 +93,19 @@ export default function SubscriptionsView() {
   // Track page view when component mounts
   useEffect(() => {
     trackPageView("/profile/subscriptions", "Subscriptions View");
-  }, []);
+
+    // جلب بيانات الأب إذا كان المستخدم أباً
+    console.log(
+      "useEffect - isParent:",
+      isParent,
+      "parentData exists:",
+      !!parentData
+    );
+    if (isParent && !parentData) {
+      console.log("Dispatching fetchParentHome...");
+      dispatch(fetchParentHome() as any);
+    }
+  }, [isParent, parentData, dispatch, finalAccountType]);
 
   if (loading) {
     return (
@@ -48,17 +116,42 @@ export default function SubscriptionsView() {
   }
 
   if (!subscriptions || subscriptions.length === 0) {
+    console.log(
+      "No subscriptions found - isParent:",
+      isParent,
+      "parentData:",
+      parentData
+    );
+
     return (
       <div className="text-center py-12">
         <div className="text-gray-500 dark:text-gray-400 mb-6">
           <CreditCard className="w-20 h-20 mx-auto mb-4 opacity-50" />
         </div>
         <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
-          {t("subscriptions.no_subscriptions")}
+          {isParent
+            ? t("subscriptions.no_children_subscriptions") ||
+              "لا توجد اشتراكات للأبناء"
+            : t("subscriptions.no_subscriptions")}
         </h3>
         <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-          {t("subscriptions.no_subscriptions_description")}
+          {isParent
+            ? t("subscriptions.no_children_subscriptions_description") ||
+              "لم تقم بالاشتراك في أي صف بعد"
+            : t("subscriptions.no_subscriptions_description")}
         </p>
+        {isParent && parentData && (
+          <div className="mt-4 text-sm text-gray-400">
+            <p>عدد الأطفال: {parentData.children?.length || 0}</p>
+            <p>
+              إجمالي الاشتراكات:{" "}
+              {parentData.children?.reduce(
+                (total, child) => total + (child.subscriptions?.length || 0),
+                0
+              ) || 0}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -67,10 +160,14 @@ export default function SubscriptionsView() {
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {t("subscriptions.title")}
+          {isParent
+            ? t("subscriptions.children_subscriptions")
+            : t("subscriptions.title")}
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          {t("subscriptions.subtitle")}
+          {isParent
+            ? t("subscriptions.children_subtitle")
+            : t("subscriptions.subtitle")}
         </p>
       </div>
       {subscriptions.map((subscription) => (
@@ -89,8 +186,20 @@ export default function SubscriptionsView() {
                     {subscription.grade.title}
                   </span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {getSemesterText(subscription.semester)}
+                    {subscription.semester
+                      ? getSemesterText(subscription.semester)
+                      : subscription.plan?.title}
                   </span>
+                  {/* عرض اسم الطفل إذا كان المستخدم أباً */}
+                  {isParent && (subscription as any).childInfo && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <User className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {(subscription as any).childInfo.firstName}{" "}
+                        {(subscription as any).childInfo.lastName}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardTitle>
               <div className="flex flex-wrap gap-2">

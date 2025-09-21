@@ -20,6 +20,51 @@ export const metadata: Metadata = {
   title: "Smart Teacher - AI Learning Platform",
   description: "Learn smarter with AI-powered education",
   generator: "v0.dev",
+  icons: {
+    icon: [
+      { url: "/images/logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/smallLogo.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/images/logo.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/images/logo.png",
+  },
+  openGraph: {
+    title: "Smart Teacher - AI Learning Platform",
+    description: "Learn smarter with AI-powered education",
+    url: "https://smartteacher.com",
+    siteName: "Smart Teacher",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Smart Teacher Logo",
+      },
+    ],
+    locale: "ar",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Smart Teacher - AI Learning Platform",
+    description: "Learn smarter with AI-powered education",
+    images: ["/images/logo.png"],
+    creator: "@smartteacher",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code",
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +75,6 @@ export default function RootLayout({
   return (
     <html lang="ar">
       <head>
-        <link rel="icon" href="/images/logo.png" type="image/x-icon" />
         <GoogleTagManager />
       </head>
       <body className={`${cairo.className} bg-white dark:bg-secondary `}>

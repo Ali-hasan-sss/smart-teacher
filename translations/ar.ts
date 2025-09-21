@@ -57,7 +57,7 @@ export default {
     forTeachersDesc: "أنشئ محتوى تعليمي تفاعلي وادير طلابك بسهولة",
     forParents: "لأولياء الأمور",
     forParentsDesc: "تابع تقدم أبنائك التعليمي وشارك في رحلتهم الأكاديمية",
-    startNow: "ابدأ الآن - سجل دخولك",
+    startNow: "اشترك الان",
     // Student features
     studentFeatures: {
       interactiveLessons: "دروس تفاعلية متطورة",
@@ -265,6 +265,15 @@ export default {
     feature2: "دعم فني على مدار الساعة",
     feature3: "شهادة إتمام معتمدة",
     feature4: "متابعة شخصية مع المعلمين",
+    premium_feature1: "وصول كامل وغير محدود لجميع المحتويات",
+    premium_feature2: "تحديثات فورية للمحتوى",
+    premium_feature3: "تقارير متابعة شاملة",
+    premium_feature4: "دعم فني ومتابعة تعليمية متواصلة",
+    monthly_description:
+      "مثالية لمن يريد تجربة المنصة أو يحتاج لاستخدام قصير الأمد",
+    semester_description: "مثالية لمن يرغب بتغطية منهج فصل كامل",
+    yearly_description:
+      "مثالية لمن يريد الاستفادة من المنصة طوال العام الدراسي",
     no_plans: "لا توجد خطط متاحة حالياً",
     check_later: "يرجى المحاولة مرة أخرى لاحقاً",
     why_choose_smart_teacher: "لماذا تختار Smart Teacher؟",
@@ -272,7 +281,7 @@ export default {
       "اكتشف المميزات التي تجعل منصتنا الخيار الأمثل لتحقيق أهدافك التعليمية",
     feature_tests: "اختبارات وتقييمات",
     feature_tests_desc: "مستمرة لقياس التقدم والتطور",
-    feature_interaction: "تفاعل مسلس",
+    feature_interaction: "تفاعل سلس",
     feature_interaction_desc: "مع المنصة ودعم متاح عبر قنوات متعددة",
     feature_comprehensive: "تغطية شاملة",
     feature_comprehensive_desc: "للمواد الدراسية بمختلف المستويات",
@@ -288,6 +297,9 @@ export default {
     scanSuccess: "تم مسح الرمز بنجاح",
     camera_error: "تعذر فتح الكاميرا",
     element_not_found: "عنصر المسح غير موجود",
+    switch_camera: "تبديل الكاميرا",
+    back_camera: " خلفية",
+    front_camera: " أمامية",
     instructions: "اضغط على البدء لمسح رمز QR",
     startScan: "بدء المسح",
     cameraError: "خطأ في الوصول إلى الكاميرا",
@@ -405,6 +417,8 @@ export default {
     title: "اشتراكاتي",
     childrenSubscriptions: "اشتراكات الأبناء",
     subtitle: "إدارة اشتراكاتك والصفوف المسجلة",
+    children_subscriptions: "اشتراكات الأبناء",
+    children_subtitle: "تصفح جميع اشتراكات أطفالك النشطة والمنتهية الصلاحية",
     // Toast messages
     profileUpdated: "تم تحديث الملف الشخصي بنجاح",
     profileUpdateFailed: "فشل في تحديث الملف الشخصي",
@@ -438,6 +452,9 @@ export default {
     verification_code_sent: "تم إرسال رمز التحقق بنجاح",
     no_subscriptions: "لا توجد اشتراكات",
     no_subscriptions_description: "لم تقم بالاشتراك في أي صف بعد",
+    no_children_subscriptions: "لا توجد اشتراكات للأبناء",
+    no_children_subscriptions_description:
+      "لم يقم أطفالك بالاشتراك في أي صف بعد",
     active: "نشط",
     expired: "منتهي الصلاحية",
     first_semester: "الفصل الأول",
@@ -586,7 +603,7 @@ export default {
       "منصة تعليمية متطورة تستخدم الذكاء الاصطناعي لتقديم تجربة تعلم مخصصة وفعالة. اكتشف دروس مصممة خصيصاً لك وحقق أهدافك التعليمية بأسرع وقت.",
     description:
       " ابدأ رحلتك التعليمية الآن مع منصة ذكية تدعمك خطوة بخطوة. احصل على دروس مخصصة تناسب مستواك وأهدافك. لا تضيع وقتك، تعلم بشكل أسرع وأكثر فاعلية. اجعل التعلم ممتعًا مع أدوات تفاعلية مبتكرة. انضم لآلاف المتعلمين وحقق نجاحك اليوم!",
-    button: "ابدأ الآن",
+    button: "اشترك الان",
   },
 
   howItWork: {

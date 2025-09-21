@@ -223,7 +223,7 @@ export default function AccountTabs({
 
         {/* Subscriptions Tab */}
         <TabsContent value="subscriptions" className="mt-6">
-          <SubscriptionsView />
+          <SubscriptionsView accountType={accountType} />
         </TabsContent>
 
         {/* Relationships Tab */}
