@@ -13,6 +13,7 @@ import ClientOnly from "./wrapper";
 import GoogleTagManager, {
   GoogleTagManagerNoScript,
 } from "@/components/GoogleTagManager";
+import StructuredData from "@/components/StructuredData";
 
 const cairo = Cairo({ subsets: ["arabic"] });
 
@@ -87,13 +88,42 @@ export default function RootLayout({
       <head>
         <GoogleTagManager />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link
+          rel="icon"
+          href="/favicon-16x16.png"
+          sizes="16x16"
+          type="image/png"
+        />
+        <link
+          rel="icon"
+          href="/favicon-32x32.png"
+          sizes="32x32"
+          type="image/png"
+        />
         <link rel="icon" href="/images/logo.png" type="image/png" />
+        <link
+          rel="apple-touch-icon"
+          href="/apple-touch-icon.png"
+          sizes="180x180"
+        />
         <link rel="apple-touch-icon" href="/images/logo.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3B82F6" />
         <meta name="msapplication-TileColor" content="#3B82F6" />
         <meta name="msapplication-TileImage" content="/images/logo.png" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+        <meta name="application-name" content="Smart Teacher" />
+        <meta name="apple-mobile-web-app-title" content="Smart Teacher" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta
+          name="msapplication-tooltip"
+          content="Smart Teacher - AI Learning Platform"
+        />
+        <meta name="msapplication-starturl" content="/" />
+        <StructuredData />
       </head>
       <body className={`${cairo.className} bg-white dark:bg-secondary `}>
         <GoogleTagManagerNoScript />

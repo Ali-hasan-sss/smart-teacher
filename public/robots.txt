@@ -1,6 +1,14 @@
 User-agent: *
 Allow: /
 
+# Allow access to favicon and icons
+Allow: /favicon.ico
+Allow: /favicon-16x16.png
+Allow: /favicon-32x32.png
+Allow: /apple-touch-icon.png
+Allow: /images/logo.png
+Allow: /manifest.json
+
 Sitemap: https://smartteacherom.com/sitemap.xml
 
 # Disallow admin or private areas if any
@@ -10,9 +18,15 @@ Sitemap: https://smartteacherom.com/sitemap.xml
 # Allow all search engines to crawl the site
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Slurp
 Allow: /
+Crawl-delay: 1
+
+# Host declaration for better indexing
+Host: smartteacherom.com
