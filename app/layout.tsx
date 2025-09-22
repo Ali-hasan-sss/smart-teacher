@@ -24,18 +24,54 @@ export const metadata: Metadata = {
   generator: "v0.dev",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/images/logo.png", sizes: "32x32", type: "image/png" },
-      { url: "/images/smallLogo.png", sizes: "16x16", type: "image/png" },
-      { url: "/images/logo.png", sizes: "48x48", type: "image/png" },
-      { url: "/images/logo.png", sizes: "96x96", type: "image/png" },
-      { url: "/images/logo.png", sizes: "144x144", type: "image/png" },
+      { url: "https://smartteacherom.com/favicon.ico", sizes: "any" },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/smallLogo.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "48x48",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "96x96",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "144x144",
+        type: "image/png",
+      },
     ],
     apple: [
-      { url: "/images/logo.png", sizes: "180x180", type: "image/png" },
-      { url: "/images/logo.png", sizes: "152x152", type: "image/png" },
-      { url: "/images/logo.png", sizes: "120x120", type: "image/png" },
-      { url: "/images/logo.png", sizes: "76x76", type: "image/png" },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "152x152",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "120x120",
+        type: "image/png",
+      },
+      {
+        url: "https://smartteacherom.com/images/logo.png",
+        sizes: "76x76",
+        type: "image/png",
+      },
     ],
     shortcut: "/favicon.ico",
   },
@@ -90,17 +126,21 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link
           rel="icon"
-          href="/favicon-16x16.png"
+          href="https://smartteacherom.com/favicon-16x16.png"
           sizes="16x16"
           type="image/png"
         />
         <link
           rel="icon"
-          href="/favicon-32x32.png"
+          href="https://smartteacherom.com/favicon-32x32.png"
           sizes="32x32"
           type="image/png"
         />
-        <link rel="icon" href="/images/logo.png" type="image/png" />
+        <link
+          rel="icon"
+          href="https://smartteacherom.com/images/logo.png"
+          type="image/png"
+        />
         <link
           rel="apple-touch-icon"
           href="/apple-touch-icon.png"
@@ -110,7 +150,10 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3B82F6" />
         <meta name="msapplication-TileColor" content="#3B82F6" />
-        <meta name="msapplication-TileImage" content="/images/logo.png" />
+        <meta
+          name="msapplication-TileImage"
+          content="https://smartteacherom.com/images/logo.png"
+        />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         <meta name="application-name" content="Smart Teacher" />
         <meta name="apple-mobile-web-app-title" content="Smart Teacher" />
