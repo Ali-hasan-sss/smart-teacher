@@ -20,7 +20,7 @@ export default function CTA() {
         <p className="text-lg text-center text-gray-300">
           {t("cta.description")}
         </p>
-        <Link href={"/subjects"}>
+        <Link href={"/plans"}>
           <Button className="rounded-full py-4 px-5 text-white w-[150px]">
             {t("cta.button")}
           </Button>
