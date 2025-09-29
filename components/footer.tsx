@@ -27,6 +27,7 @@ export default function Footer() {
   const supportLinks = [
     { label: t("footer.supportLinks.contact"), path: "/contact" },
     { label: t("footer.supportLinks.helpCenter"), path: "/contact" },
+    { label: t("footer.supportLinks.downloadApp"), path: "/download-app" },
   ];
 
   return (

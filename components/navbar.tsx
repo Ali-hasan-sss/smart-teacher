@@ -67,9 +67,7 @@ export function Navbar() {
     ...(accountType !== "Parent"
       ? [{ name: t("navigation.subjects"), href: "/subjects", icon: BookOpen }]
       : []),
-    ...(accountType !== "Parent"
-      ? [{ name: t("navigation.plans"), href: "/plans", icon: CreditCard }]
-      : []),
+    { name: t("navigation.plans"), href: "/plans", icon: CreditCard },
     { name: t("navigation.contact"), href: "/contact", icon: Phone },
     { name: t("navigation.about"), href: "/about-us", icon: ShieldQuestion },
   ];

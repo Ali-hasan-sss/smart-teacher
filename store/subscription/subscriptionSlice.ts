@@ -3,6 +3,7 @@ import {
   createSubscription,
   fetchSubscriptions,
   fetchPlans,
+  createSubscriptionForChild,
 } from "./subscriptionThunks";
 
 interface Account {
@@ -63,6 +64,8 @@ interface SubscriptionState {
   plansLoading: boolean;
   error: string | null;
   plansError: string | null;
+  forChildLoading: boolean;
+  forChildError: string | null;
 }
 
 const initialState: SubscriptionState = {
@@ -72,6 +75,8 @@ const initialState: SubscriptionState = {
   plansLoading: false,
   error: null,
   plansError: null,
+  forChildLoading: false,
+  forChildError: null,
 };
 
 const subscriptionSlice = createSlice({
@@ -119,6 +124,22 @@ const subscriptionSlice = createSlice({
     builder.addCase(fetchPlans.rejected, (state, action) => {
       state.plansLoading = false;
       state.plansError = action.payload as string;
+    });
+
+    // Create subscription for child cases
+    builder.addCase(createSubscriptionForChild.pending, (state) => {
+      state.forChildLoading = true;
+      state.forChildError = null;
+    });
+    builder.addCase(createSubscriptionForChild.fulfilled, (state, action) => {
+      state.forChildLoading = false;
+      if (action.payload?.data) {
+        state.items.push(action.payload.data);
+      }
+    });
+    builder.addCase(createSubscriptionForChild.rejected, (state, action) => {
+      state.forChildLoading = false;
+      state.forChildError = action.payload as string;
     });
   },
 });

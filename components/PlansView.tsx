@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchPlans } from "@/store/subscription/subscriptionThunks";
+import {
+  fetchPlans,
+  createSubscriptionForChild,
+} from "@/store/subscription/subscriptionThunks";
 import { fetchAllGrades } from "@/store/grade/gradeThunk";
+import { getChildren } from "@/store/account/accountThunks";
 import type { RootState } from "@/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +24,7 @@ import {
   Award,
   Users,
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import LoaderCard from "./loaders/LoaderCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
@@ -42,6 +47,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     title: string;
   } | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
+  const [selectedChild, setSelectedChild] = useState<number | null>(null);
+  const [notes, setNotes] = useState<string>("");
 
   // البيانات الثابتة للخطط
   const staticPlans = [
@@ -83,21 +90,33 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     })
   );
 
+  const { children, childrenLoading } = useAppSelector((state: RootState) => ({
+    children: state.account.children,
+    childrenLoading: state.account.childrenLoading,
+  }));
+
   const { user, token } = useAppSelector((state: RootState) => ({
     user: state.auth.user,
     token: state.auth.token,
   }));
 
-  // التحقق من حالة تسجيل الدخول
+  // التحقق من حالة تسجيل الدخول ونوع الحساب
   const isLoggedIn = Boolean(user && token);
+  const isParentAccount = user?.accountType === "Parent";
 
   useEffect(() => {
     // تحميل البيانات فقط للمستخدمين المسجلين
     if (isLoggedIn) {
       dispatch(fetchPlans());
-      dispatch(fetchAllGrades());
+      if (isParentAccount) {
+        // تحميل بيانات الأبناء للحسابات من نوع Parent
+        dispatch(getChildren());
+      } else {
+        // تحميل الصفوف للحسابات العادية
+        dispatch(fetchAllGrades());
+      }
     }
-  }, [dispatch, isLoggedIn]);
+  }, [dispatch, isLoggedIn, isParentAccount]);
 
   const handleSubscribe = async (
     planId: number,
@@ -128,21 +147,33 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     setSelectedGrade(gradeId);
   };
 
+  const handleChildSelect = (childId: number) => {
+    setSelectedChild(childId);
+  };
+
   const handleConfirmSubscription = async () => {
-    if (!selectedPlan || !selectedGrade) {
-      alert(t("plan.select_grade_required"));
-      return;
+    // التحقق من البيانات المطلوبة حسب نوع الحساب
+    if (isParentAccount) {
+      if (!selectedPlan || !selectedChild) {
+        alert(t("plan.select_child_required"));
+        return;
+      }
+    } else {
+      if (!selectedPlan || !selectedGrade) {
+        alert(t("plan.select_grade_required"));
+        return;
+      }
     }
 
     // Store selected data
     localStorage.setItem("selectedPlanId", selectedPlan.id.toString());
-    localStorage.setItem("selectedGradeId", selectedGrade.toString());
+    if (isParentAccount) {
+      localStorage.setItem("selectedChildId", selectedChild!.toString());
+      localStorage.setItem("subscriptionNotes", notes);
+    } else {
+      localStorage.setItem("selectedGradeId", selectedGrade!.toString());
+    }
     localStorage.setItem("currentPath", window.location.pathname);
-
-    // Get selected grade details
-    const selectedGradeDetails = grades.find(
-      (grade) => grade.id === selectedGrade
-    );
 
     try {
       const secretKey =
@@ -152,24 +183,79 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
         process.env.NEXT_PUBLIC_THAWANI_PUBLIC_KEY ||
         "OezEMaPh3dC1E4v9w7JrRtA8KNOYXf";
 
-      // Create product for selected grade
-      if (!selectedGradeDetails) {
-        alert(t("plan.grade_not_found"));
-        return;
-      }
+      let products;
+      let clientReferenceId;
+      let metadata;
 
-      const products = [
-        {
-          name: `${selectedPlan.title} - ${selectedGradeDetails.title}`,
-          quantity: 1,
-          unit_amount: selectedPlan.price * 1000,
-          description: `${t("plan.semester_1")}: ${
-            selectedGradeDetails.firstSemesterPrice
-          } ${t("plan.currency")}, ${t("plan.semester_2")}: ${
-            selectedGradeDetails.secondSemesterPrice
-          } ${t("plan.currency")}`,
-        },
-      ];
+      if (isParentAccount) {
+        // للحسابات من نوع Parent - استخدام بيانات الابن المختار
+        const selectedChildDetails = children?.find(
+          (child: any) => child.id === selectedChild
+        );
+
+        if (!selectedChildDetails) {
+          alert(t("plan.child_not_found"));
+          return;
+        }
+
+        products = [
+          {
+            name: `${selectedPlan.title} - ${selectedChildDetails.firstName} ${selectedChildDetails.lastName}`,
+            quantity: 1,
+            unit_amount: selectedPlan.price * 1000,
+            description: `${t("plan.for_child")}: ${
+              selectedChildDetails.firstName
+            } ${selectedChildDetails.lastName}`,
+          },
+        ];
+
+        clientReferenceId = `plan_${
+          selectedPlan.id
+        }_child_${selectedChild}_${Date.now()}`;
+        metadata = {
+          plan_id: selectedPlan.id.toString(),
+          plan_title: selectedPlan.title,
+          selected_child: selectedChild!.toString(),
+          child_name: `${selectedChildDetails.firstName} ${selectedChildDetails.lastName}`,
+          price: selectedPlan.price.toString(),
+          account_type: "Parent",
+        };
+      } else {
+        // للحسابات العادية - استخدام بيانات الصف المختار
+        const selectedGradeDetails = grades.find(
+          (grade) => grade.id === selectedGrade
+        );
+
+        if (!selectedGradeDetails) {
+          alert(t("plan.grade_not_found"));
+          return;
+        }
+
+        products = [
+          {
+            name: `${selectedPlan.title} - ${selectedGradeDetails.title}`,
+            quantity: 1,
+            unit_amount: selectedPlan.price * 1000,
+            description: `${t("plan.semester_1")}: ${
+              selectedGradeDetails.firstSemesterPrice
+            } ${t("plan.currency")}, ${t("plan.semester_2")}: ${
+              selectedGradeDetails.secondSemesterPrice
+            } ${t("plan.currency")}`,
+          },
+        ];
+
+        clientReferenceId = `plan_${
+          selectedPlan.id
+        }_grade_${selectedGrade}_${Date.now()}`;
+        metadata = {
+          plan_id: selectedPlan.id.toString(),
+          plan_title: selectedPlan.title,
+          selected_grade: selectedGrade!.toString(),
+          grade_title: selectedGradeDetails.title,
+          price: selectedPlan.price.toString(),
+          account_type: "Client",
+        };
+      }
 
       const thawaniRes = await fetch(
         "https://checkout.thawani.om/api/v1/checkout/session",
@@ -180,20 +266,12 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
             "thawani-api-key": secretKey,
           },
           body: JSON.stringify({
-            client_reference_id: `plan_${
-              selectedPlan.id
-            }_grade_${selectedGrade}_${Date.now()}`,
+            client_reference_id: clientReferenceId,
             mode: "payment",
             products: products,
             success_url: `${window.location.origin}/payment/success`,
             cancel_url: `${window.location.origin}/payment/cancel`,
-            metadata: {
-              plan_id: selectedPlan.id.toString(),
-              plan_title: selectedPlan.title,
-              selected_grade: selectedGrade.toString(),
-              grade_title: selectedGradeDetails.title,
-              price: selectedPlan.price.toString(),
-            },
+            metadata: metadata,
           }),
           signal: AbortSignal.timeout(30000),
         }
@@ -246,6 +324,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     setShowGradeModal(false);
     setSelectedPlan(null);
     setSelectedGrade(null);
+    setSelectedChild(null);
+    setNotes("");
   };
 
   const handleLegacySubscription = async (
@@ -526,7 +606,9 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                 {/* Modal Header */}
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {t("plan.select_grades")}
+                    {isParentAccount
+                      ? t("plan.select_child")
+                      : t("plan.select_grades")}
                   </h2>
                   <button
                     onClick={handleCloseModal}
@@ -547,26 +629,47 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                         {selectedPlan.price} {t("plan.currency")}
                       </p>
 
-                      {/* Selected Grade Preview */}
-                      {selectedGrade && (
+                      {/* Selected Grade/Child Preview */}
+                      {(selectedGrade || selectedChild) && (
                         <div className="bg-white dark:bg-gray-700 rounded p-3">
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t("plan.selected_grade")}:
+                            {isParentAccount
+                              ? t("plan.selected_child")
+                              : t("plan.selected_grade")}
+                            :
                           </p>
                           {(() => {
-                            const grade = grades.find(
-                              (g) => g.id === selectedGrade
-                            );
-                            return grade ? (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-400">
-                                  {selectedPlan.title} - {grade.title}
-                                </span>
-                                <span className="font-medium text-gray-800 dark:text-gray-200">
-                                  {selectedPlan.price} {t("plan.currency")}
-                                </span>
-                              </div>
-                            ) : null;
+                            if (isParentAccount && selectedChild) {
+                              const child = children?.find(
+                                (c: any) => c.id === selectedChild
+                              );
+                              return child ? (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    {selectedPlan.title} - {child.firstName}{" "}
+                                    {child.lastName}
+                                  </span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">
+                                    {selectedPlan.price} {t("plan.currency")}
+                                  </span>
+                                </div>
+                              ) : null;
+                            } else if (selectedGrade) {
+                              const grade = grades.find(
+                                (g) => g.id === selectedGrade
+                              );
+                              return grade ? (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    {selectedPlan.title} - {grade.title}
+                                  </span>
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">
+                                    {selectedPlan.price} {t("plan.currency")}
+                                  </span>
+                                </div>
+                              ) : null;
+                            }
+                            return null;
                           })()}
                         </div>
                       )}
@@ -574,9 +677,66 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                   </div>
                 )}
 
-                {/* Grades List */}
+                {/* Grades/Children List */}
                 <div className="mb-6">
-                  {gradesLoading ? (
+                  {isParentAccount ? (
+                    // عرض قائمة الأبناء للحسابات من نوع Parent
+                    childrenLoading ? (
+                      <div className="text-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                        <p className="text-sm text-gray-500 mt-2">
+                          {t("plan.loading_children")}
+                        </p>
+                      </div>
+                    ) : children && children.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-3">
+                        {children.map((child: any) => (
+                          <div
+                            key={child.id}
+                            className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                              selectedChild === child.id
+                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-600 hover:border-blue-300"
+                            }`}
+                            onClick={() => handleChildSelect(child.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                  selectedChild === child.id
+                                    ? "border-blue-500 bg-blue-500"
+                                    : "border-gray-300 dark:border-gray-500"
+                                }`}
+                              >
+                                {selectedChild === child.id && (
+                                  <div className="w-2 h-2 bg-white rounded-full" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                  {child.firstName} {child.lastName}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  {child.email}
+                                </p>
+                                {child.grade && (
+                                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                    {child.grade.title}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>{t("plan.no_children_found")}</p>
+                      </div>
+                    )
+                  ) : // عرض قائمة الصفوف للحسابات العادية
+                  gradesLoading ? (
                     <div className="text-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                       <p className="text-sm text-gray-500 mt-2">
@@ -617,6 +777,21 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                   )}
                 </div>
 
+                {/* Notes Field for Parent Accounts */}
+                {isParentAccount && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t("plan.notes")} ({t("plan.optional")})
+                    </label>
+                    <Textarea
+                      placeholder={t("plan.notes_placeholder")}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[80px] resize-none"
+                    />
+                  </div>
+                )}
+
                 {/* Modal Actions */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
@@ -628,7 +803,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                   </Button>
                   <Button
                     onClick={handleConfirmSubscription}
-                    disabled={!selectedGrade}
+                    disabled={isParentAccount ? !selectedChild : !selectedGrade}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 order-1 sm:order-2"
                   >
                     {t("plan.confirm_subscription")}

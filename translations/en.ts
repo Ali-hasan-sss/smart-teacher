@@ -298,6 +298,17 @@ export default {
     selected_grade: "Selected Grade",
     duration_description: "Access duration from activation date",
     expires_on: "Expires on",
+    // Parent child selection modal
+    select_child: "Select Child",
+    select_child_required: "Please select at least one child",
+    selected_child: "Selected Child",
+    loading_children: "Loading children...",
+    no_children_found: "No children linked to your account",
+    child_not_found: "Selected child not found",
+    for_child: "For Child",
+    notes: "Notes",
+    optional: "Optional",
+    notes_placeholder: "Add any additional notes (optional)",
   },
   plans: {
     title: "Available Subscription Plans",
@@ -648,6 +659,7 @@ export default {
       contact: "Contact Us",
       faq: "FAQ",
       helpCenter: "Help Center",
+      downloadApp: " Download Mobile App",
     },
     social: {
       title: "Follow Us",
@@ -751,5 +763,76 @@ export default {
     semester: "Semester",
     firstSemester: "First",
     secondSemester: "Second",
+  },
+  downloadApp: {
+    title: "Smart Teacher App",
+    subtitle: "Your Path to Smart Learning in Oman",
+    description:
+      "Upgrade your learning experience with Smart Teacher, the first app in Oman that combines interactive education, smart monitoring, and self-assessment for students from Grade 5 to Grade 12.",
+    companion_title: "Your Perfect Learning Companion",
+    companion_description:
+      "The app is designed to be your perfect companion in your learning journey, whether you are a student, parent, or teacher. Discover an advanced educational experience that combines modern technology with Omani curricula.",
+    features_title: "App Features",
+    features_subtitle:
+      "Discover the features that make Smart Teacher the ideal choice for learning",
+    download_title: "Download the App Now",
+    download_subtitle:
+      "Start your journey towards smart learning with one click!",
+    android_download: "Download for Android",
+    android_subtitle: "Direct Download",
+    ios_download: "Download for iPhone",
+    ios_subtitle: "App Store",
+    note: "Note",
+    note_text:
+      "The app is available for free download with additional features through flexible subscription plans.",
+    target_audience_title: "Target Audience",
+    target_audience_description:
+      "School students in Oman (from Grade 5 to Grade 12), in addition to parents and teachers who want to effectively track academic progress.",
+    support_title: "For Inquiries and Support",
+    support_subtitle: "We are here to help you anytime",
+    email: "Email",
+    whatsapp: "WhatsApp",
+    email_address: "support@smartteacher.om",
+    phone_number: "+968 93637076",
+    why_choose_title: "Why Choose Smart Teacher App?",
+    why_choose_subtitle:
+      "Discover the reasons that make our app the ideal choice for students in Oman",
+    omani_curriculum: "Omani Curriculum",
+    omani_curriculum_desc: "Content specifically designed for Omani curricula",
+    instant_assessment: "Instant Assessment",
+    instant_assessment_desc: "Instant tests and assessments for progress",
+    comprehensive_tracking: "Comprehensive Tracking",
+    comprehensive_tracking_desc:
+      "Detailed reports for performance and progress",
+    educational_community: "Educational Community",
+    educational_community_desc: "Connect with students and teachers",
+    features: {
+      interactive_lessons: {
+        title: "Interactive Lessons",
+        description:
+          "Cover Omani curricula in a fun and easy-to-understand way",
+      },
+      self_assessment: {
+        title: "Self-Tests and Exercises",
+        description: "To instantly assess student level",
+      },
+      performance_tracking: {
+        title: "Performance and Progress Tracking",
+        description: "With detailed reports for parents and teachers",
+      },
+      user_friendly: {
+        title: "User-Friendly Interface",
+        description: "And fast performance",
+      },
+      direct_support: {
+        title: "Direct Support",
+        description:
+          "And effective communication with the Smart Teacher team to help users",
+      },
+      available_for_all: {
+        title: "Available for Everyone",
+        description: "Students, parents, and teachers from Grade 5 to Grade 12",
+      },
+    },
   },
 };

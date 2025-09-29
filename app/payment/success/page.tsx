@@ -26,13 +26,25 @@ export default function PaymentSuccess() {
     const activateSubscription = async () => {
       const planId = localStorage.getItem("selectedPlanId");
       const gradeId = localStorage.getItem("selectedGradeId");
+      const childId = localStorage.getItem("selectedChildId");
       const sessionId = localStorage.getItem("paymentSessionId");
 
-      if (!planId || !gradeId || !sessionId) {
+      if (!planId || !sessionId) {
         setIsActivating(false);
         toast({
           title: "فشل العملية",
           description: "بيانات الاشتراك غير مكتملة.",
+        });
+        setTimeout(() => router.push("/"), 3000);
+        return;
+      }
+
+      // التحقق من وجود بيانات إما الصف أو الابن
+      if (!gradeId && !childId) {
+        setIsActivating(false);
+        toast({
+          title: "فشل العملية",
+          description: "لم يتم تحديد الصف أو الابن.",
         });
         setTimeout(() => router.push("/"), 3000);
         return;
@@ -50,11 +62,24 @@ export default function PaymentSuccess() {
       try {
         setIsActivating(true);
 
-        await axios.post("/api/Client/Subscription", {
-          planId: +planId,
-          gradeId: +gradeId,
-          sessionId,
-        });
+        // تحديد نوع الطلب حسب وجود childId
+        if (childId) {
+          // للحسابات من نوع Parent - استخدام الرابط الجديد
+          await axios.post("/api/Client/Subscription/ForChild", {
+            planId: +planId,
+            gradeId: +gradeId! || 0, // يمكن أن يكون 0 إذا لم يتم تحديده
+            sessionId,
+            notes: localStorage.getItem("subscriptionNotes") || "",
+            accountId: +childId,
+          });
+        } else {
+          // للحسابات العادية
+          await axios.post("/api/Client/Subscription", {
+            planId: +planId,
+            gradeId: +gradeId!,
+            sessionId,
+          });
+        }
 
         localStorage.setItem(`activated_${sessionId}`, "true");
         setIsActivating(false);
@@ -65,6 +90,8 @@ export default function PaymentSuccess() {
           [
             "selectedPlanId",
             "selectedGradeId",
+            "selectedChildId",
+            "subscriptionNotes",
             "paymentSessionId",
             "currentPath",
           ].forEach((key) => localStorage.removeItem(key));

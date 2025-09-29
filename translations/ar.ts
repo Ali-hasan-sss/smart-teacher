@@ -254,6 +254,17 @@ export default {
     selected_grade: "الصف المحدد",
     duration_description: "مدة الوصول من تاريخ التفعيل",
     expires_on: "تاريخ الانتهاء",
+    // Parent child selection modal
+    select_child: "اختر الابن",
+    select_child_required: "يرجى اختيار ابن واحد على الأقل",
+    selected_child: "الابن المحدد",
+    loading_children: "جاري تحميل الأبناء...",
+    no_children_found: "لا يوجد أبناء مرتبطين بحسابك",
+    child_not_found: "الابن المحدد غير موجود",
+    for_child: "للابن",
+    notes: "ملاحظات",
+    optional: "اختياري",
+    notes_placeholder: "أضف أي ملاحظات إضافية (اختياري)",
   },
   plans: {
     title: "الخطط المتاحة للاشتراك",
@@ -588,6 +599,7 @@ export default {
       contact: "تواصل معنا",
       faq: "الاسئلة الشائعة",
       helpCenter: "مركز المساعدة",
+      downloadApp: " تحميل تطبيق الموبايل",
     },
     social: {
       title: "تابعنا",
@@ -719,5 +731,72 @@ export default {
     semester: "الفصل",
     firstSemester: "الأول",
     secondSemester: "الثاني",
+  },
+  downloadApp: {
+    title: 'تطبيق "المعلّم الذكي"',
+    subtitle: "طريقك نحو التعلّم الذكي في سلطنة عُمان",
+    description:
+      "ارتقِ بتجربتك التعليمية مع تطبيق المعلّم الذكي، التطبيق الأول في سلطنة عُمان الذي يجمع بين التعليم التفاعلي، المتابعة الذكية، والتقييم الذاتي للطلاب من الصف الخامس حتى الصف الثاني عشر.",
+    companion_title: "رفيقك المثالي في رحلة التعلّم",
+    companion_description:
+      "تم تصميم التطبيق ليكون رفيقك المثالي في رحلة التعلّم، سواء كنت طالبًا، ولي أمر، أو معلّمًا. اكتشف تجربة تعليمية متطورة تجمع بين التكنولوجيا الحديثة والمناهج العُمانية.",
+    features_title: "مميزات التطبيق",
+    features_subtitle:
+      "اكتشف المميزات التي تجعل من تطبيق المعلّم الذكي الخيار الأمثل للتعلم",
+    download_title: "قم بتحميل التطبيق الآن",
+    download_subtitle: "ابدأ رحلتك نحو التعلّم الذكي بضغطة زر!",
+    android_download: "تحميل للاندرويد",
+    android_subtitle: "تحميل مباشر",
+    ios_download: "تحميل للايفون",
+    ios_subtitle: "App Store",
+    note: "ملاحظة",
+    note_text:
+      "التطبيق متاح مجانًا للتحميل مع ميزات إضافية ضمن خطط اشتراك مرنة.",
+    target_audience_title: "الفئة المستهدفة",
+    target_audience_description:
+      "طلاب المدارس في سلطنة عُمان (من الصف الخامس إلى الصف الثاني عشر)، بالإضافة إلى أولياء الأمور والمعلمين الراغبين بمتابعة التقدّم الدراسي بشكل فعّال.",
+    support_title: "للاستفسارات والدعم",
+    support_subtitle: "نحن هنا لمساعدتك في أي وقت",
+    email: "البريد الإلكتروني",
+    whatsapp: "واتساب",
+    email_address: "support@smartteacher.om",
+    phone_number: "+968 93637076",
+    why_choose_title: "لماذا تختار تطبيق المعلّم الذكي؟",
+    why_choose_subtitle:
+      "اكتشف الأسباب التي تجعل من تطبيقنا الخيار الأمثل لطلاب سلطنة عُمان",
+    omani_curriculum: "مناهج عُمانية",
+    omani_curriculum_desc: "محتوى مصمم خصيصًا للمناهج العُمانية",
+    instant_assessment: "تقييم فوري",
+    instant_assessment_desc: "اختبارات وتقييمات فورية للتقدم",
+    comprehensive_tracking: "متابعة شاملة",
+    comprehensive_tracking_desc: "تقارير مفصلة للأداء والتقدم",
+    educational_community: "مجتمع تعليمي",
+    educational_community_desc: "تواصل مع الطلاب والمعلمين",
+    features: {
+      interactive_lessons: {
+        title: "دروس تفاعلية",
+        description: "تغطي المناهج الدراسية العُمانية بطريقة ممتعة وسهلة الفهم",
+      },
+      self_assessment: {
+        title: "اختبارات وتمارين ذاتية",
+        description: "لتقييم مستوى الطالب فورًا",
+      },
+      performance_tracking: {
+        title: "متابعة الأداء والتقدّم",
+        description: "مع تقارير مفصّلة لولي الأمر والمعلم",
+      },
+      user_friendly: {
+        title: "واجهة سهلة الاستخدام",
+        description: "وسرعة في الأداء",
+      },
+      direct_support: {
+        title: "دعم مباشر",
+        description: "وتواصل فعال مع فريق المعلّم الذكي لمساعدة المستخدمين",
+      },
+      available_for_all: {
+        title: "متاح للجميع",
+        description: "طلاب، أولياء أمور، ومعلمين من الصف الخامس حتى الثاني عشر",
+      },
+    },
   },
 };

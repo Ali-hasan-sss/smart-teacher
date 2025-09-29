@@ -47,3 +47,36 @@ export const fetchPlans = createAsyncThunk(
     }
   }
 );
+
+export const createSubscriptionForChild = createAsyncThunk(
+  "subscription/createForChild",
+  async (
+    {
+      gradeId,
+      planId,
+      sessionId,
+      notes,
+      accountId,
+    }: {
+      gradeId: number;
+      planId: number;
+      sessionId: string;
+      notes: string;
+      accountId: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axios.post("/api/Client/Subscription/ForChild", {
+        gradeId,
+        planId,
+        sessionId,
+        notes,
+        accountId,
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
