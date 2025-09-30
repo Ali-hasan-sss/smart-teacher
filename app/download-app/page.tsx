@@ -85,58 +85,6 @@ export default function DownloadAppPage() {
       </section>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Introduction Section */}
-        <section className="mb-16">
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-0 shadow-xl">
-            <CardContent className="p-8 md:p-12">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  {t("downloadApp.companion_title")}
-                </h2>
-                <p className="text-lg text-gray-700 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                  {t("downloadApp.companion_description")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Features Section */}
-        <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-3">
-              <span className="text-4xl">🎯</span>
-              {t("downloadApp.features_title")}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
-              {t("downloadApp.features_subtitle")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card
-                key={index}
-                className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white dark:bg-gray-800"
-              >
-                <CardContent className="p-6 text-center">
-                  <div
-                    className={`w-16 h-16 mx-auto mb-4 ${feature.bgColor} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
         {/* Download Section */}
         <section className="mb-16">
           <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-2xl">
@@ -206,6 +154,57 @@ export default function DownloadAppPage() {
           </Card>
         </section>
 
+        {/* Features Section */}
+        <section className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-3">
+              <span className="text-4xl">🎯</span>
+              {t("downloadApp.features_title")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
+              {t("downloadApp.features_subtitle")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <Card
+                key={index}
+                className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white dark:bg-gray-800"
+              >
+                <CardContent className="p-6 text-center">
+                  <div
+                    className={`w-16 h-16 mx-auto mb-4 ${feature.bgColor} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Introduction Section */}
+        <section className="mb-16">
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-0 shadow-xl">
+            <CardContent className="p-8 md:p-12">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                  {t("downloadApp.companion_title")}
+                </h2>
+                <p className="text-lg text-gray-700 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+                  {t("downloadApp.companion_description")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
         {/* Target Audience Section */}
         <section className="mb-16">
           <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-0 shadow-xl">

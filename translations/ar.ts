@@ -759,7 +759,7 @@ export default {
     support_subtitle: "نحن هنا لمساعدتك في أي وقت",
     email: "البريد الإلكتروني",
     whatsapp: "واتساب",
-    email_address: "support@smartteacher.om",
+    email_address: "info@smartteacherom.com",
     phone_number: "+968 93637076",
     why_choose_title: "لماذا تختار تطبيق المعلّم الذكي؟",
     why_choose_subtitle:
