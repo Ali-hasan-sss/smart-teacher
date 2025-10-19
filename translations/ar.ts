@@ -746,7 +746,7 @@ export default {
     download_title: "قم بتحميل التطبيق الآن",
     download_subtitle: "ابدأ رحلتك نحو التعلّم الذكي بضغطة زر!",
     android_download: "تحميل للاندرويد",
-    android_subtitle: "تحميل مباشر",
+    android_subtitle: "google play",
     ios_download: "تحميل للايفون",
     ios_subtitle: "App Store",
     note: "ملاحظة",

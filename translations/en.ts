@@ -779,7 +779,7 @@ export default {
     download_subtitle:
       "Start your journey towards smart learning with one click!",
     android_download: "Download for Android",
-    android_subtitle: "Direct Download",
+    android_subtitle: "google play",
     ios_download: "Download for iPhone",
     ios_subtitle: "App Store",
     note: "Note",

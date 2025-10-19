@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Download,
   Smartphone,
-  Monitor,
   Star,
   CheckCircle,
   MessageCircle,
@@ -101,15 +100,16 @@ export default function DownloadAppPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto mb-8">
                 <a
-                  href="/downloads/smart-teacher.apk"
+                  href="https://play.google.com/store/apps/details?id=com.awacyber.ai_courses"
                   download="smart-teacher.apk"
                   className="flex-1"
+                  target="blank"
                 >
                   <Button
                     size="lg"
                     className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3"
                   >
-                    <Monitor className="w-6 h-6" />
+                    <Smartphone className="w-6 h-6" />
                     <div className="text-left">
                       <div className="text-sm">
                         {t("downloadApp.android_download")}
@@ -121,11 +121,11 @@ export default function DownloadAppPage() {
                   </Button>
                 </a>
 
-                <Link
+                <a
                   href="https://apps.apple.com/om/app/smart-teacher-%D8%A7%D9%84%D9%85%D8%B9%D9%84%D9%85-%D8%A7%D9%84%D8%B0%D9%83%D9%8A/id6748265372"
-                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1"
+                  target="blank"
                 >
                   <Button
                     size="lg"
@@ -141,7 +141,7 @@ export default function DownloadAppPage() {
                       </div>
                     </div>
                   </Button>
-                </Link>
+                </a>
               </div>
 
               <div className="bg-white/10 rounded-lg p-4 max-w-lg mx-auto">
