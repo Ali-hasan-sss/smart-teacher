@@ -223,6 +223,7 @@ export default {
     payment_error: "خطأ في إنشاء جلسة الدفع",
     payment_failed: "فشل إنشاء جلسة الدفع",
     currency: "ريال",
+    discount: "خصم",
     api_key_invalid: "مفاتيح الدفع غير متوفرة. يرجى التواصل مع الدعم الفني.",
     payment_service_error: "خطأ في خدمة الدفع. يرجى المحاولة لاحقاً.",
     network_error: "خطأ في الشبكة. تحقق من اتصال الإنترنت.",

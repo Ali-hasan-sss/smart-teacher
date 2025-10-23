@@ -30,6 +30,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
 import { Grade } from "@/types/grade";
 import { useRouter } from "next/navigation";
+import { Plan } from "@/store/subscription/subscriptionSlice";
 
 interface PlansViewProps {
   gradeId?: number;
@@ -51,13 +52,14 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
   const [notes, setNotes] = useState<string>("");
 
   // البيانات الثابتة للخطط
-  const staticPlans = [
+  const staticPlans: Plan[] = [
     {
       id: 1,
       title: "الخطة الشهرية",
       type: "Monthly",
       price: 15.0,
       expiredAt: "2025-10-22 05:59",
+      activeOffer: null,
     },
     {
       id: 2,
@@ -65,6 +67,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       type: "Semesterly",
       price: 45.0,
       expiredAt: "2025-12-31 00:00",
+      activeOffer: null,
     },
     {
       id: 3,
@@ -72,6 +75,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       type: "Yearly",
       price: 75.0,
       expiredAt: "2026-07-31 00:00",
+      activeOffer: null,
     },
   ];
 
@@ -121,7 +125,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
   const handleSubscribe = async (
     planId: number,
     price: number,
-    title: string
+    title: string,
+    activeOffer?: any
   ) => {
     // إذا لم يكن المستخدم مسجل دخول، توجيهه لصفحة تسجيل الدخول
     if (!isLoggedIn) {
@@ -133,13 +138,16 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       return;
     }
 
+    // استخدام السعر المخفض إذا كان هناك عرض نشط
+    const finalPrice = activeOffer ? activeOffer.discountedPrice : price;
+
     if (onSubscribe) {
-      onSubscribe(planId, price, title);
+      onSubscribe(planId, finalPrice, title);
       return;
     }
 
     // Open grade selection modal
-    setSelectedPlan({ id: planId, price, title });
+    setSelectedPlan({ id: planId, price: finalPrice, title });
     setShowGradeModal(true);
   };
 
@@ -512,14 +520,53 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
 
                     {/* Price Section */}
                     <div className="text-center mb-6">
-                      <div className="flex items-baseline justify-center gap-1 mb-2">
-                        <span className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                          {plan.price}
-                        </span>
-                        <span className="text-gray-600 dark:text-gray-300 text-sm">
-                          {t("plan.currency")}
-                        </span>
-                      </div>
+                      {plan.activeOffer ? (
+                        // عرض السعر مع الخصم
+                        <div className="space-y-2">
+                          {/* Discount Badge */}
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 text-sm font-medium">
+                            <span className="mr-1">🔥</span>
+                            {plan.activeOffer.discountPercentage}%{" "}
+                            {t("plan.discount")}
+                          </div>
+
+                          {/* Original Price - Crossed Out */}
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-lg text-gray-400 dark:text-gray-500 line-through">
+                              {plan.price}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-500 text-sm">
+                              {t("plan.currency")}
+                            </span>
+                          </div>
+
+                          {/* Discounted Price */}
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+                              {plan.activeOffer.discountedPrice}
+                            </span>
+                            <span className="text-red-600 dark:text-red-400 text-sm">
+                              {t("plan.currency")}
+                            </span>
+                          </div>
+
+                          {/* Offer Title */}
+                          <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+                            {plan.activeOffer.title}
+                          </p>
+                        </div>
+                      ) : (
+                        // عرض السعر العادي بدون خصم
+                        <div className="flex items-baseline justify-center gap-1 mb-2">
+                          <span className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                            {plan.price}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-300 text-sm">
+                            {t("plan.currency")}
+                          </span>
+                        </div>
+                      )}
+
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {t("plan.duration_description")}
                       </p>
@@ -562,7 +609,12 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                     {/* Subscribe Button */}
                     <Button
                       onClick={() =>
-                        handleSubscribe(plan.id, plan.price, plan.title)
+                        handleSubscribe(
+                          plan.id,
+                          plan.price,
+                          plan.title,
+                          plan.activeOffer
+                        )
                       }
                       className={`w-full py-3 rounded-xl font-bold text-white transition-all duration-300 ${getPlanColor(
                         index

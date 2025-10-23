@@ -49,12 +49,24 @@ export interface Subscription {
   sessionId: string | null;
 }
 
+export interface ActiveOffer {
+  id: number;
+  title: string;
+  discountPercentage: number;
+  image: string;
+  planId: number;
+  discountedPrice: number;
+  startDate: string;
+  endDate: string;
+}
+
 export interface Plan {
   id: number;
   title: string;
   type: string;
   price: number;
   expiredAt: string;
+  activeOffer?: ActiveOffer | null;
 }
 
 interface SubscriptionState {

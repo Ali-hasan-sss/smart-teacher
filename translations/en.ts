@@ -266,6 +266,7 @@ export default {
     payment_error: "Error creating payment session",
     payment_failed: "Failed to create payment session",
     currency: "OMR",
+    discount: "OFF",
     api_key_invalid:
       "Payment keys not available. Please contact technical support.",
     payment_service_error: "Payment service error. Please try again later.",
