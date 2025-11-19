@@ -307,7 +307,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       }
 
       const thawaniRes = await fetch(
-        "https://checkout.thawani.om/api/v1/checkout/session",
+        "https://uatcheckout.thawani.om/api/v1/checkout/session",
         {
           method: "POST",
           headers: {
