@@ -266,6 +266,15 @@ export default {
     notes: "ملاحظات",
     optional: "اختياري",
     notes_placeholder: "أضف أي ملاحظات إضافية (اختياري)",
+    // Coupon related
+    coupon_code: "كود الكوبون",
+    coupon_code_placeholder: "أدخل كود الكوبون",
+    coupon_code_required: "يرجى إدخال كود الكوبون",
+    coupon_valid: "الكوبون صالح",
+    coupon_invalid: "الكوبون غير صالح",
+    verify: "تحقق",
+    verifying: "جارٍ التحقق...",
+    you_save: "توفير",
   },
   plans: {
     title: "الخطط المتاحة للاشتراك",

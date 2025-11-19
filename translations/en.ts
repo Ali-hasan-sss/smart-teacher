@@ -310,6 +310,15 @@ export default {
     notes: "Notes",
     optional: "Optional",
     notes_placeholder: "Add any additional notes (optional)",
+    // Coupon related
+    coupon_code: "Coupon Code",
+    coupon_code_placeholder: "Enter coupon code",
+    coupon_code_required: "Please enter coupon code",
+    coupon_valid: "Coupon is valid",
+    coupon_invalid: "Coupon is invalid",
+    verify: "Verify",
+    verifying: "Verifying...",
+    you_save: "You Save",
   },
   plans: {
     title: "Available Subscription Plans",

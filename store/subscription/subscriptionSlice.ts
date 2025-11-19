@@ -4,6 +4,7 @@ import {
   fetchSubscriptions,
   fetchPlans,
   createSubscriptionForChild,
+  verifyCoupon,
 } from "./subscriptionThunks";
 
 interface Account {
@@ -78,6 +79,9 @@ interface SubscriptionState {
   plansError: string | null;
   forChildLoading: boolean;
   forChildError: string | null;
+  couponVerificationLoading: boolean;
+  couponVerificationError: string | null;
+  verifiedCoupon: any | null;
 }
 
 const initialState: SubscriptionState = {
@@ -89,12 +93,20 @@ const initialState: SubscriptionState = {
   plansError: null,
   forChildLoading: false,
   forChildError: null,
+  couponVerificationLoading: false,
+  couponVerificationError: null,
+  verifiedCoupon: null,
 };
 
 const subscriptionSlice = createSlice({
   name: "subscription",
   initialState,
-  reducers: {},
+  reducers: {
+    clearCouponVerification: (state) => {
+      state.verifiedCoupon = null;
+      state.couponVerificationError = null;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(createSubscription.pending, (state) => {
       state.loading = true;
@@ -153,7 +165,24 @@ const subscriptionSlice = createSlice({
       state.forChildLoading = false;
       state.forChildError = action.payload as string;
     });
+
+    // Coupon verification cases
+    builder.addCase(verifyCoupon.pending, (state) => {
+      state.couponVerificationLoading = true;
+      state.couponVerificationError = null;
+      state.verifiedCoupon = null;
+    });
+    builder.addCase(verifyCoupon.fulfilled, (state, action) => {
+      state.couponVerificationLoading = false;
+      state.verifiedCoupon = action.payload;
+    });
+    builder.addCase(verifyCoupon.rejected, (state, action) => {
+      state.couponVerificationLoading = false;
+      state.couponVerificationError = action.payload as string;
+      state.verifiedCoupon = null;
+    });
   },
 });
 
+export const { clearCouponVerification } = subscriptionSlice.actions;
 export default subscriptionSlice.reducer;

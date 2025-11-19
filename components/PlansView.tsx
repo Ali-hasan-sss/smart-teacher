@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearCouponVerification } from "@/store/subscription/subscriptionSlice";
 import {
   fetchPlans,
   createSubscriptionForChild,
+  verifyCoupon,
 } from "@/store/subscription/subscriptionThunks";
 import { fetchAllGrades } from "@/store/grade/gradeThunk";
 import { getChildren } from "@/store/account/accountThunks";
@@ -25,6 +27,7 @@ import {
   Users,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import LoaderCard from "./loaders/LoaderCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
@@ -50,6 +53,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [notes, setNotes] = useState<string>("");
+  const [couponCode, setCouponCode] = useState<string>("");
+  const [isVerifyingCoupon, setIsVerifyingCoupon] = useState(false);
 
   // البيانات الثابتة للخطط
   const staticPlans: Plan[] = [
@@ -79,13 +84,21 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     },
   ];
 
-  const { plans, plansLoading, plansError } = useAppSelector(
-    (state: RootState) => ({
-      plans: state.subscription.plans,
-      plansLoading: state.subscription.plansLoading,
-      plansError: state.subscription.plansError,
-    })
-  );
+  const {
+    plans,
+    plansLoading,
+    plansError,
+    couponVerificationLoading,
+    verifiedCoupon,
+    couponVerificationError,
+  } = useAppSelector((state: RootState) => ({
+    plans: state.subscription.plans,
+    plansLoading: state.subscription.plansLoading,
+    plansError: state.subscription.plansError,
+    couponVerificationLoading: state.subscription.couponVerificationLoading,
+    verifiedCoupon: state.subscription.verifiedCoupon,
+    couponVerificationError: state.subscription.couponVerificationError,
+  }));
 
   const { grades, loading: gradesLoading } = useAppSelector(
     (state: RootState) => ({
@@ -159,6 +172,24 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     setSelectedChild(childId);
   };
 
+  const handleVerifyCoupon = async () => {
+    if (!couponCode.trim()) {
+      alert(t("plan.coupon_code_required") || "يرجى إدخال كود الكوبون");
+      return;
+    }
+
+    try {
+      setIsVerifyingCoupon(true);
+      await dispatch(verifyCoupon({ code: couponCode.trim() })).unwrap();
+      // الكوبون صالح - سيتم عرض رسالة نجاح من خلال verifiedCoupon
+    } catch (error: any) {
+      // الخطأ سيتم عرضه من خلال couponVerificationError
+      console.error("Coupon verification failed:", error);
+    } finally {
+      setIsVerifyingCoupon(false);
+    }
+  };
+
   const handleConfirmSubscription = async () => {
     // التحقق من البيانات المطلوبة حسب نوع الحساب
     if (isParentAccount) {
@@ -181,6 +212,10 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     } else {
       localStorage.setItem("selectedGradeId", selectedGrade!.toString());
     }
+    // حفظ الكوبون إذا كان صالحاً
+    if (verifiedCoupon && couponCode.trim()) {
+      localStorage.setItem("couponCode", couponCode.trim());
+    }
     localStorage.setItem("currentPath", window.location.pathname);
 
     try {
@@ -190,6 +225,12 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       const publishableKey =
         process.env.NEXT_PUBLIC_THAWANI_PUBLIC_KEY ||
         "OezEMaPh3dC1E4v9w7JrRtA8KNOYXf";
+
+      // حساب السعر النهائي مع الخصم إذا كان هناك كوبون صالح
+      const finalPrice =
+        verifiedCoupon?.data?.isValid && verifiedCoupon?.data?.discount
+          ? selectedPlan.price * (1 - verifiedCoupon.data.discount / 100)
+          : selectedPlan.price;
 
       let products;
       let clientReferenceId;
@@ -210,7 +251,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           {
             name: `${selectedPlan.title} - ${selectedChildDetails.firstName} ${selectedChildDetails.lastName}`,
             quantity: 1,
-            unit_amount: selectedPlan.price * 1000,
+            unit_amount: finalPrice * 1000,
             description: `${t("plan.for_child")}: ${
               selectedChildDetails.firstName
             } ${selectedChildDetails.lastName}`,
@@ -243,7 +284,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           {
             name: `${selectedPlan.title} - ${selectedGradeDetails.title}`,
             quantity: 1,
-            unit_amount: selectedPlan.price * 1000,
+            unit_amount: finalPrice * 1000,
             description: `${t("plan.semester_1")}: ${
               selectedGradeDetails.firstSemesterPrice
             } ${t("plan.currency")}, ${t("plan.semester_2")}: ${
@@ -334,6 +375,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     setSelectedGrade(null);
     setSelectedChild(null);
     setNotes("");
+    setCouponCode("");
   };
 
   const handleLegacySubscription = async (
@@ -677,9 +719,30 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                       {selectedPlan.title}
                     </h3>
                     <div className="space-y-2">
-                      <p className="text-blue-600 dark:text-blue-400">
-                        {selectedPlan.price} {t("plan.currency")}
-                      </p>
+                      {verifiedCoupon?.data?.isValid &&
+                      verifiedCoupon?.data?.discount ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 dark:text-gray-400 line-through text-sm">
+                              {selectedPlan.price} {t("plan.currency")}
+                            </span>
+                            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">
+                              -{verifiedCoupon.data.discount}%
+                            </span>
+                          </div>
+                          <p className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                            {(
+                              selectedPlan.price *
+                              (1 - verifiedCoupon.data.discount / 100)
+                            ).toFixed(2)}{" "}
+                            {t("plan.currency")}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-blue-600 dark:text-blue-400">
+                          {selectedPlan.price} {t("plan.currency")}
+                        </p>
+                      )}
 
                       {/* Selected Grade/Child Preview */}
                       {(selectedGrade || selectedChild) && (
@@ -702,7 +765,15 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                                     {child.lastName}
                                   </span>
                                   <span className="font-medium text-gray-800 dark:text-gray-200">
-                                    {selectedPlan.price} {t("plan.currency")}
+                                    {verifiedCoupon?.data?.isValid &&
+                                    verifiedCoupon?.data?.discount
+                                      ? (
+                                          selectedPlan.price *
+                                          (1 -
+                                            verifiedCoupon.data.discount / 100)
+                                        ).toFixed(2)
+                                      : selectedPlan.price}{" "}
+                                    {t("plan.currency")}
                                   </span>
                                 </div>
                               ) : null;
@@ -716,7 +787,15 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                                     {selectedPlan.title} - {grade.title}
                                   </span>
                                   <span className="font-medium text-gray-800 dark:text-gray-200">
-                                    {selectedPlan.price} {t("plan.currency")}
+                                    {verifiedCoupon?.data?.isValid &&
+                                    verifiedCoupon?.data?.discount
+                                      ? (
+                                          selectedPlan.price *
+                                          (1 -
+                                            verifiedCoupon.data.discount / 100)
+                                        ).toFixed(2)
+                                      : selectedPlan.price}{" "}
+                                    {t("plan.currency")}
                                   </span>
                                 </div>
                               ) : null;
@@ -843,6 +922,127 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                     />
                   </div>
                 )}
+
+                {/* Coupon Code Field */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t("plan.coupon_code") || "كود الكوبون"} (
+                    {t("plan.optional") || "اختياري"})
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder={
+                        t("plan.coupon_code_placeholder") || "أدخل كود الكوبون"
+                      }
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        // مسح حالة التحقق عند تغيير الكود
+                        if (verifiedCoupon || couponVerificationError) {
+                          dispatch(clearCouponVerification());
+                        }
+                      }}
+                      className="flex-1"
+                      disabled={couponVerificationLoading}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleVerifyCoupon}
+                      disabled={!couponCode.trim() || couponVerificationLoading}
+                      variant="outline"
+                      className="whitespace-nowrap"
+                    >
+                      {couponVerificationLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {t("plan.verifying") || "جارٍ التحقق..."}
+                        </>
+                      ) : (
+                        t("plan.verify") || "تحقق"
+                      )}
+                    </Button>
+                  </div>
+                  {/* Coupon Verification Status */}
+                  {verifiedCoupon && verifiedCoupon.data?.isValid && (
+                    <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm font-medium">
+                          <Check className="w-4 h-4" />
+                          <span>
+                            {verifiedCoupon.data?.message ||
+                              t("plan.coupon_valid") ||
+                              "الكوبون صالح"}{" "}
+                            ✓
+                          </span>
+                        </div>
+                        {verifiedCoupon.data?.title && (
+                          <div className="text-green-800 dark:text-green-300 font-semibold text-sm">
+                            {verifiedCoupon.data.title}
+                          </div>
+                        )}
+                        {verifiedCoupon.data?.discount && selectedPlan && (
+                          <div className="space-y-1 pt-2 border-t border-green-200 dark:border-green-700">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-green-700 dark:text-green-400">
+                                {t("plan.discount") || "الخصم"}:
+                              </span>
+                              <span className="font-bold text-green-800 dark:text-green-300">
+                                {verifiedCoupon.data.discount}%
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400 line-through">
+                                {selectedPlan.price} {t("plan.currency")}
+                              </span>
+                              <span className="font-bold text-green-800 dark:text-green-300 text-base">
+                                {(
+                                  selectedPlan.price *
+                                  (1 - verifiedCoupon.data.discount / 100)
+                                ).toFixed(2)}{" "}
+                                {t("plan.currency")}
+                              </span>
+                            </div>
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              {t("plan.you_save") || "توفير"}:
+                              <span className="font-semibold ml-1">
+                                {(
+                                  selectedPlan.price *
+                                  (verifiedCoupon.data.discount / 100)
+                                ).toFixed(2)}{" "}
+                                {t("plan.currency")}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {verifiedCoupon.data?.discount && !selectedPlan && (
+                          <div className="pt-2 border-t border-green-200 dark:border-green-700">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-green-700 dark:text-green-400">
+                                {t("plan.discount") || "الخصم"}:
+                              </span>
+                              <span className="font-bold text-green-800 dark:text-green-300">
+                                {verifiedCoupon.data.discount}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {couponVerificationError && (
+                    <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
+                        <X className="w-4 h-4" />
+                        <span>
+                          {typeof couponVerificationError === "string"
+                            ? couponVerificationError
+                            : t("plan.coupon_invalid") || "الكوبون غير صالح"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Modal Actions */}
                 <div className="flex flex-col sm:flex-row gap-3">

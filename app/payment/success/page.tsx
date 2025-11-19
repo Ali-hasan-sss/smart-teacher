@@ -28,6 +28,7 @@ export default function PaymentSuccess() {
       const gradeId = localStorage.getItem("selectedGradeId");
       const childId = localStorage.getItem("selectedChildId");
       const sessionId = localStorage.getItem("paymentSessionId");
+      const couponCode = localStorage.getItem("couponCode");
 
       if (!planId || !sessionId) {
         setIsActivating(false);
@@ -65,20 +66,44 @@ export default function PaymentSuccess() {
         // تحديد نوع الطلب حسب وجود childId
         if (childId) {
           // للحسابات من نوع Parent - استخدام الرابط الجديد
-          await axios.post("/api/Client/Subscription/ForChild", {
+          const requestBody: {
+            planId: number;
+            gradeId: number;
+            sessionId: string;
+            notes: string;
+            accountId: number;
+            couponCode?: string;
+          } = {
             planId: +planId,
             gradeId: +gradeId! || 0, // يمكن أن يكون 0 إذا لم يتم تحديده
             sessionId,
             notes: localStorage.getItem("subscriptionNotes") || "",
             accountId: +childId,
-          });
+          };
+
+          if (couponCode) {
+            requestBody.couponCode = couponCode;
+          }
+
+          await axios.post("/api/Client/Subscription/ForChild", requestBody);
         } else {
           // للحسابات العادية
-          await axios.post("/api/Client/Subscription", {
+          const requestBody: {
+            planId: number;
+            gradeId: number;
+            sessionId: string;
+            couponCode?: string;
+          } = {
             planId: +planId,
             gradeId: +gradeId!,
             sessionId,
-          });
+          };
+
+          if (couponCode) {
+            requestBody.couponCode = couponCode;
+          }
+
+          await axios.post("/api/Client/Subscription", requestBody);
         }
 
         localStorage.setItem(`activated_${sessionId}`, "true");
@@ -94,6 +119,7 @@ export default function PaymentSuccess() {
             "subscriptionNotes",
             "paymentSessionId",
             "currentPath",
+            "couponCode",
           ].forEach((key) => localStorage.removeItem(key));
 
           router.push(localStorage.getItem("currentPath") || "/");
