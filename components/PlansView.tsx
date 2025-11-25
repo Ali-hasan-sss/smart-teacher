@@ -33,7 +33,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { trackSubscription } from "@/utils/gtm";
 import { Grade } from "@/types/grade";
 import { useRouter } from "next/navigation";
-import { Plan } from "@/store/subscription/subscriptionSlice";
+import { ActiveOffer, Plan } from "@/store/subscription/subscriptionSlice";
 
 interface PlansViewProps {
   gradeId?: number;
@@ -49,6 +49,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     id: number;
     price: number;
     title: string;
+    activeOffer?: ActiveOffer | null;
   } | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
@@ -100,6 +101,36 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     couponVerificationError: state.subscription.couponVerificationError,
   }));
 
+  const hasValidCoupon =
+    Boolean(verifiedCoupon?.data?.isValid) &&
+    Boolean(verifiedCoupon?.data?.discount);
+
+  const couponDiscountValue = hasValidCoupon
+    ? Number(verifiedCoupon?.data?.discount)
+    : null;
+
+  const calculateFinalPrice = (
+    basePrice: number,
+    activeOffer?: ActiveOffer | null
+  ) => {
+    if (hasValidCoupon && couponDiscountValue) {
+      return Number((basePrice * (1 - couponDiscountValue / 100)).toFixed(2));
+    }
+
+    if (activeOffer?.discountedPrice) {
+      return Number(activeOffer.discountedPrice);
+    }
+
+    return basePrice;
+  };
+
+  const formatPrice = (price: number) =>
+    Number.isInteger(price) ? price.toString() : price.toFixed(2);
+
+  const selectedPlanFinalPrice = selectedPlan
+    ? calculateFinalPrice(selectedPlan.price, selectedPlan.activeOffer)
+    : 0;
+
   const { grades, loading: gradesLoading } = useAppSelector(
     (state: RootState) => ({
       grades: state.grades.grades,
@@ -139,7 +170,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     planId: number,
     price: number,
     title: string,
-    activeOffer?: any
+    activeOffer?: ActiveOffer | null
   ) => {
     // إذا لم يكن المستخدم مسجل دخول، توجيهه لصفحة تسجيل الدخول
     if (!isLoggedIn) {
@@ -151,8 +182,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       return;
     }
 
-    // استخدام السعر المخفض إذا كان هناك عرض نشط
-    const finalPrice = activeOffer ? activeOffer.discountedPrice : price;
+    // استخدام السعر المخفض بناءً على الكوبون أو العرض
+    const finalPrice = calculateFinalPrice(price, activeOffer);
 
     if (onSubscribe) {
       onSubscribe(planId, finalPrice, title);
@@ -160,7 +191,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     }
 
     // Open grade selection modal
-    setSelectedPlan({ id: planId, price: finalPrice, title });
+    setSelectedPlan({ id: planId, price, title, activeOffer });
     setShowGradeModal(true);
   };
 
@@ -213,7 +244,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       localStorage.setItem("selectedGradeId", selectedGrade!.toString());
     }
     // حفظ الكوبون إذا كان صالحاً
-    if (verifiedCoupon && couponCode.trim()) {
+    if (verifiedCoupon?.data?.isValid && couponCode.trim()) {
       localStorage.setItem("couponCode", couponCode.trim());
     }
     localStorage.setItem("currentPath", window.location.pathname);
@@ -226,11 +257,11 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
         process.env.NEXT_PUBLIC_THAWANI_PUBLIC_KEY ||
         "OezEMaPh3dC1E4v9w7JrRtA8KNOYXf";
 
-      // حساب السعر النهائي مع الخصم إذا كان هناك كوبون صالح
-      const finalPrice =
-        verifiedCoupon?.data?.isValid && verifiedCoupon?.data?.discount
-          ? selectedPlan.price * (1 - verifiedCoupon.data.discount / 100)
-          : selectedPlan.price;
+      // حساب السعر النهائي مع الخصم بناءً على الكوبون أو العرض
+      const finalPrice = calculateFinalPrice(
+        selectedPlan.price,
+        selectedPlan.activeOffer
+      );
 
       let products;
       let clientReferenceId;
@@ -266,7 +297,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           plan_title: selectedPlan.title,
           selected_child: selectedChild!.toString(),
           child_name: `${selectedChildDetails.firstName} ${selectedChildDetails.lastName}`,
-          price: selectedPlan.price.toString(),
+          price: finalPrice.toString(),
           account_type: "Parent",
         };
       } else {
@@ -301,7 +332,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           plan_title: selectedPlan.title,
           selected_grade: selectedGrade!.toString(),
           grade_title: selectedGradeDetails.title,
-          price: selectedPlan.price.toString(),
+          price: finalPrice.toString(),
           account_type: "Client",
         };
       }
@@ -348,11 +379,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
       const paymentUrl = `https://checkout.thawani.om/pay/${sessionId}?key=${publishableKey}`;
 
       localStorage.setItem("paymentSessionId", sessionId);
-      trackSubscription(
-        selectedPlan.id,
-        selectedPlan.title,
-        selectedPlan.price
-      );
+      trackSubscription(selectedPlan.id, selectedPlan.title, finalPrice);
       window.location.href = paymentUrl;
     } catch (error: unknown) {
       console.error("❌ Payment error:", error);
@@ -562,7 +589,43 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
 
                     {/* Price Section */}
                     <div className="text-center mb-6">
-                      {plan.activeOffer ? (
+                      {hasValidCoupon ? (
+                        <div className="space-y-2">
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium">
+                            <span className="mr-1">🎟️</span>-
+                            {couponDiscountValue}% {t("plan.discount")}
+                          </div>
+
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-lg text-gray-400 dark:text-gray-500 line-through">
+                              {plan.price}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-500 text-sm">
+                              {t("plan.currency")}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                              {formatPrice(
+                                calculateFinalPrice(
+                                  plan.price,
+                                  plan.activeOffer
+                                )
+                              )}
+                            </span>
+                            <span className="text-green-600 dark:text-green-400 text-sm">
+                              {t("plan.currency")}
+                            </span>
+                          </div>
+
+                          {verifiedCoupon?.data?.title && (
+                            <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                              {verifiedCoupon.data.title}
+                            </p>
+                          )}
+                        </div>
+                      ) : plan.activeOffer ? (
                         // عرض السعر مع الخصم
                         <div className="space-y-2">
                           {/* Discount Badge */}
@@ -719,22 +782,36 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                       {selectedPlan.title}
                     </h3>
                     <div className="space-y-2">
-                      {verifiedCoupon?.data?.isValid &&
-                      verifiedCoupon?.data?.discount ? (
+                      {hasValidCoupon ? (
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 dark:text-gray-400 line-through text-sm">
                               {selectedPlan.price} {t("plan.currency")}
                             </span>
                             <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">
-                              -{verifiedCoupon.data.discount}%
+                              -{couponDiscountValue}% {t("plan.discount")}
                             </span>
                           </div>
                           <p className="text-blue-600 dark:text-blue-400 font-bold text-lg">
-                            {(
-                              selectedPlan.price *
-                              (1 - verifiedCoupon.data.discount / 100)
-                            ).toFixed(2)}{" "}
+                            {formatPrice(selectedPlanFinalPrice)}{" "}
+                            {t("plan.currency")}
+                          </p>
+                        </div>
+                      ) : selectedPlan.activeOffer ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 dark:text-gray-400 line-through text-sm">
+                              {selectedPlan.price} {t("plan.currency")}
+                            </span>
+                            <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-xs font-medium">
+                              {selectedPlan.activeOffer.discountPercentage}%{" "}
+                              {t("plan.discount")}
+                            </span>
+                          </div>
+                          <p className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                            {formatPrice(
+                              Number(selectedPlan.activeOffer.discountedPrice)
+                            )}{" "}
                             {t("plan.currency")}
                           </p>
                         </div>
@@ -765,14 +842,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                                     {child.lastName}
                                   </span>
                                   <span className="font-medium text-gray-800 dark:text-gray-200">
-                                    {verifiedCoupon?.data?.isValid &&
-                                    verifiedCoupon?.data?.discount
-                                      ? (
-                                          selectedPlan.price *
-                                          (1 -
-                                            verifiedCoupon.data.discount / 100)
-                                        ).toFixed(2)
-                                      : selectedPlan.price}{" "}
+                                    {formatPrice(selectedPlanFinalPrice)}{" "}
                                     {t("plan.currency")}
                                   </span>
                                 </div>
@@ -787,14 +857,7 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                                     {selectedPlan.title} - {grade.title}
                                   </span>
                                   <span className="font-medium text-gray-800 dark:text-gray-200">
-                                    {verifiedCoupon?.data?.isValid &&
-                                    verifiedCoupon?.data?.discount
-                                      ? (
-                                          selectedPlan.price *
-                                          (1 -
-                                            verifiedCoupon.data.discount / 100)
-                                        ).toFixed(2)
-                                      : selectedPlan.price}{" "}
+                                    {formatPrice(selectedPlanFinalPrice)}{" "}
                                     {t("plan.currency")}
                                   </span>
                                 </div>
