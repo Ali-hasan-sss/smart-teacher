@@ -3,11 +3,13 @@
 export interface Message {
   id: number;
   messageType: "Question" | "Answer";
-  contentType: "Text" | "Audio";
+  contentType: "Text" | "Audio" | "IMAGE" | "Image";
   createdAt: string;
   updatedAt: string | null;
   audioFile: string | null;
   content: string | null;
+  imageUrls?: string[];
+  imageFiles?: string[];
   order: number;
 }
 

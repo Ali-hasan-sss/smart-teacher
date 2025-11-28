@@ -46,11 +46,16 @@ export const fetchMessagesByCourse = createAsyncThunk<
 
 export const sendMessage = createAsyncThunk<
   Message[],
-  { courseId: number; contentType: string; content: string }
+  {
+    courseId: number;
+    contentType: string;
+    content: string;
+    imageUrls?: string[];
+  }
 >("conversation/sendMessage", async (messageData, { rejectWithValue }) => {
   try {
     const res = await axios.post<ConversationResponse<Message>>(
-      "/api/Client/Conversation/message",
+      "/api/Client/Conversation/message/with-images",
       messageData
     );
     return res.data.data.items;
@@ -127,13 +132,18 @@ export const fetchGeneralMessages = createAsyncThunk<
 // إرسال رسالة عامة
 export const sendGeneralMessage = createAsyncThunk<
   Message[],
-  { courseId: number; contentType: string; content: string }
+  {
+    courseId: number;
+    contentType: string;
+    content: string;
+    imageUrls?: string[];
+  }
 >(
   "conversation/sendGeneralMessage",
   async (messageData, { rejectWithValue }) => {
     try {
       const res = await axios.post<ConversationResponse<Message>>(
-        "/api/Client/Conversation/General/message",
+        "/api/Client/Conversation/General/message/with-images",
         messageData
       );
       return res.data.data.items;

@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   CheckSquare,
   Download,
+  Image as ImageIcon,
   Mic,
   Send,
   Square,
@@ -57,8 +58,12 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [contentType, setContentType] = useState<"TEXT" | "AUDIO">("TEXT");
+  const [contentType, setContentType] = useState<"TEXT" | "AUDIO" | "IMAGE">(
+    "TEXT"
+  );
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -135,12 +140,14 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
   }, [open, courseId, dispatch]);
 
   const handleSend = () => {
-    if (!text.trim() && contentType === "TEXT") return;
+    if (!text.trim() && contentType === "TEXT" && selectedImages.length === 0)
+      return;
 
     const payload = {
       courseId: courseId ?? 0,
       contentType,
-      content: text,
+      content: text || "",
+      ...(selectedImages.length > 0 && { imageUrls: selectedImages }),
     };
 
     if (courseId) dispatch(sendMessage(payload));
@@ -148,6 +155,7 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
 
     setText("");
     setContentType("TEXT");
+    setSelectedImages([]);
   };
 
   const handleSendButton = (text: string) => {
@@ -163,6 +171,68 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
 
   const streamRef = useRef<MediaStream | null>(null);
   const cancelRecordingRef = useRef<() => void>();
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const MAX_IMAGES = 5;
+    const currentImageCount = selectedImages.length;
+    const remainingSlots = MAX_IMAGES - currentImageCount;
+
+    if (remainingSlots <= 0) {
+      alert(`يمكنك رفع حد أقصى ${MAX_IMAGES} صور في الرسالة الواحدة`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+      alert(
+        `يمكنك رفع ${remainingSlots} صورة فقط. سيتم رفع أول ${remainingSlots} صورة.`
+      );
+    }
+
+    try {
+      setIsUploading(true);
+      const uploadPromises = filesToUpload.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await axios.post(
+          "/api/Common/BaseFile/UploadAnyFile",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        return res.data.data.url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setSelectedImages((prev) => [...prev, ...uploadedUrls]);
+      setContentType("IMAGE");
+    } catch (err) {
+      console.error("Failed to upload images:", err);
+      alert("فشل في رفع الصور. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    if (selectedImages.length === 1) {
+      setContentType("TEXT");
+    }
+  };
 
   const handleAudio = async () => {
     if (typeof window === "undefined") return;
@@ -658,6 +728,10 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
                         const isAudio =
                           m.audioFile ||
                           m.contentType?.toUpperCase() === "AUDIO";
+                        const isImage =
+                          (m.imageFiles && m.imageFiles.length > 0) ||
+                          (m.imageUrls && m.imageUrls.length > 0) ||
+                          m.contentType?.toUpperCase() === "IMAGE";
                         const selected = selectedMessages.includes(m.id);
 
                         return (
@@ -699,11 +773,36 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
                             >
                               {m.messageType === "Answer" &&
                               !m.content &&
-                              !m.audioFile ? (
+                              !m.audioFile &&
+                              !m.imageUrls?.length &&
+                              !m.imageFiles?.length ? (
                                 <div className="flex items-center space-x-1">
                                   <span className="dot dot1" />
                                   <span className="dot dot2" />
                                   <span className="dot dot3" />
+                                </div>
+                              ) : (m.imageFiles && m.imageFiles.length > 0) ||
+                                (m.imageUrls && m.imageUrls.length > 0) ? (
+                                <div className="flex flex-col gap-2">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {(m.imageFiles || m.imageUrls || []).map(
+                                      (url, idx) => (
+                                        <img
+                                          key={idx}
+                                          src={url}
+                                          alt={`Image ${idx + 1}`}
+                                          className="w-full h-auto rounded-lg object-cover"
+                                        />
+                                      )
+                                    )}
+                                  </div>
+                                  {m.content && (
+                                    <div className="prose prose-sm max-w-none leading-relaxed p-3 rounded-lg text-gray-900 dark:text-gray-100">
+                                      <div className="whitespace-pre-wrap">
+                                        {m.content}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ) : isAudio ? (
                                 <div className="flex flex-col space-y-2">
@@ -838,53 +937,106 @@ export default function Chat({ courseId, className, courseData }: ChatProps) {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 p-3 border-t dark:border-gray-700">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isUploading}
-                    onClick={() => {
-                      if (contentType === "TEXT") {
-                        setContentType("AUDIO");
-                      } else if (isRecording) {
-                        mediaRecorderRef.current?.stop();
-                        setIsRecording(false);
-                      } else {
-                        handleAudio();
-                      }
-                    }}
-                  >
-                    {contentType === "TEXT" ? (
-                      <Mic className="w-5 h-5" />
-                    ) : isRecording ? (
-                      <Send className="w-5 h-5 text-green-500 animate-pulse" />
-                    ) : (
-                      <Mic className="w-5 h-5" />
-                    )}
-                  </Button>
-                  {isRecording && (
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => cancelRecordingRef.current?.()}
-                      title={t("chat.cancel_recording")}
-                    >
-                      <X className="w-5 h-5" />
-                    </Button>
+                <div className="flex flex-col gap-2 p-3 border-t dark:border-gray-700">
+                  {/* عرض الصور المحددة */}
+                  {selectedImages.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {selectedImages.map((url, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={url}
+                              alt={`Uploaded ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg border border-gray-300"
+                            />
+                            <button
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {selectedImages.length}/5 صور
+                      </p>
+                    </div>
                   )}
 
-                  <Input
-                    placeholder={t("chat.whrite_message")}
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  />
-                  <Button
-                    onClick={handleSend}
-                    className="bg-blue-600 hover:text-black dark:hover:text-white"
-                  >
-                    <Send className="w-5 h-5" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploading || selectedImages.length >= 5}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={isUploading || selectedImages.length >= 5}
+                      onClick={() => fileInputRef.current?.click()}
+                      title={
+                        selectedImages.length >= 5
+                          ? `يمكنك رفع حد أقصى 5 صور (${selectedImages.length}/5)`
+                          : t("chat.upload_image") ||
+                            `رفع صورة (${selectedImages.length}/5)`
+                      }
+                    >
+                      <ImageIcon className="w-5 h-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={isUploading}
+                      onClick={() => {
+                        if (contentType === "TEXT" || contentType === "IMAGE") {
+                          setContentType("AUDIO");
+                        } else if (isRecording) {
+                          mediaRecorderRef.current?.stop();
+                          setIsRecording(false);
+                        } else {
+                          handleAudio();
+                        }
+                      }}
+                    >
+                      {contentType === "TEXT" || contentType === "IMAGE" ? (
+                        <Mic className="w-5 h-5" />
+                      ) : isRecording ? (
+                        <Send className="w-5 h-5 text-green-500 animate-pulse" />
+                      ) : (
+                        <Mic className="w-5 h-5" />
+                      )}
+                    </Button>
+                    {isRecording && (
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => cancelRecordingRef.current?.()}
+                        title={t("chat.cancel_recording")}
+                      >
+                        <X className="w-5 h-5" />
+                      </Button>
+                    )}
+
+                    <Input
+                      placeholder={t("chat.whrite_message")}
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                      disabled={isUploading}
+                    />
+                    <Button
+                      onClick={handleSend}
+                      disabled={isUploading}
+                      className="bg-blue-600 hover:text-black dark:hover:text-white"
+                    >
+                      <Send className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
 
