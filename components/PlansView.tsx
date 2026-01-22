@@ -103,18 +103,34 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
 
   const hasValidCoupon =
     Boolean(verifiedCoupon?.data?.isValid) &&
-    Boolean(verifiedCoupon?.data?.discount);
+    (Boolean(verifiedCoupon?.data?.discount) ||
+      Boolean(verifiedCoupon?.data?.discountFixed));
 
-  const couponDiscountValue = hasValidCoupon
-    ? Number(verifiedCoupon?.data?.discount)
+  // تحديد نوع الخصم: 0 = نسبة مئوية، 1 = مبلغ ثابت
+  const couponType = verifiedCoupon?.data?.type;
+  const couponDiscountPercentage = verifiedCoupon?.data?.discount
+    ? Number(verifiedCoupon.data.discount)
+    : null;
+  const couponDiscountFixed = verifiedCoupon?.data?.discountFixed
+    ? Number(verifiedCoupon.data.discountFixed)
     : null;
 
   const calculateFinalPrice = (
     basePrice: number,
     activeOffer?: ActiveOffer | null
   ) => {
-    if (hasValidCoupon && couponDiscountValue) {
-      return Number((basePrice * (1 - couponDiscountValue / 100)).toFixed(2));
+    if (hasValidCoupon) {
+      // إذا كان الخصم نسبة مئوية (type: 0)
+      if (couponType === 0 && couponDiscountPercentage) {
+        return Number(
+          (basePrice * (1 - couponDiscountPercentage / 100)).toFixed(2)
+        );
+      }
+      // إذا كان الخصم مبلغ ثابت (type: 1)
+      if (couponType === 1 && couponDiscountFixed) {
+        const finalPrice = basePrice - couponDiscountFixed;
+        return Number(Math.max(0, finalPrice).toFixed(2)); // التأكد من عدم الحصول على سعر سالب
+      }
     }
 
     if (activeOffer?.discountedPrice) {
@@ -592,8 +608,14 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                       {hasValidCoupon ? (
                         <div className="space-y-2">
                           <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium">
-                            <span className="mr-1">🎟️</span>-
-                            {couponDiscountValue}% {t("plan.discount")}
+                            <span className="mr-1">🎟️</span>
+                            {couponType === 0 && couponDiscountPercentage ? (
+                              <>-{couponDiscountPercentage}% {t("plan.discount")}</>
+                            ) : couponType === 1 && couponDiscountFixed ? (
+                              <>-{couponDiscountFixed} {t("plan.currency")} {t("plan.discount")}</>
+                            ) : (
+                              <>{t("plan.discount")}</>
+                            )}
                           </div>
 
                           <div className="flex items-center justify-center gap-1">
@@ -789,7 +811,13 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                               {selectedPlan.price} {t("plan.currency")}
                             </span>
                             <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">
-                              -{couponDiscountValue}% {t("plan.discount")}
+                              {couponType === 0 && couponDiscountPercentage ? (
+                                <>-{couponDiscountPercentage}% {t("plan.discount")}</>
+                              ) : couponType === 1 && couponDiscountFixed ? (
+                                <>-{couponDiscountFixed} {t("plan.currency")} {t("plan.discount")}</>
+                              ) : (
+                                <>{t("plan.discount")}</>
+                              )}
                             </span>
                           </div>
                           <p className="text-blue-600 dark:text-blue-400 font-bold text-lg">
@@ -1044,52 +1072,70 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
                             {verifiedCoupon.data.title}
                           </div>
                         )}
-                        {verifiedCoupon.data?.discount && selectedPlan && (
-                          <div className="space-y-1 pt-2 border-t border-green-200 dark:border-green-700">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-green-700 dark:text-green-400">
-                                {t("plan.discount") || "الخصم"}:
-                              </span>
-                              <span className="font-bold text-green-800 dark:text-green-300">
-                                {verifiedCoupon.data.discount}%
-                              </span>
+                        {((verifiedCoupon.data?.discount && couponType === 0) ||
+                          (verifiedCoupon.data?.discountFixed && couponType === 1)) &&
+                          selectedPlan && (
+                            <div className="space-y-1 pt-2 border-t border-green-200 dark:border-green-700">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-green-700 dark:text-green-400">
+                                  {t("plan.discount") || "الخصم"}:
+                                </span>
+                                <span className="font-bold text-green-800 dark:text-green-300">
+                                  {couponType === 0 && couponDiscountPercentage
+                                    ? `${couponDiscountPercentage}%`
+                                    : couponType === 1 && couponDiscountFixed
+                                    ? `${couponDiscountFixed} ${t("plan.currency")}`
+                                    : ""}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400 line-through">
+                                  {selectedPlan.price} {t("plan.currency")}
+                                </span>
+                                <span className="font-bold text-green-800 dark:text-green-300 text-base">
+                                  {formatPrice(
+                                    calculateFinalPrice(
+                                      selectedPlan.price,
+                                      selectedPlan.activeOffer
+                                    )
+                                  )}{" "}
+                                  {t("plan.currency")}
+                                </span>
+                              </div>
+                              <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                {t("plan.you_save") || "توفير"}:
+                                <span className="font-semibold ml-1">
+                                  {couponType === 0 && couponDiscountPercentage
+                                    ? formatPrice(
+                                        selectedPlan.price *
+                                          (couponDiscountPercentage / 100)
+                                      )
+                                    : couponType === 1 && couponDiscountFixed
+                                    ? formatPrice(couponDiscountFixed)
+                                    : "0"}{" "}
+                                  {t("plan.currency")}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400 line-through">
-                                {selectedPlan.price} {t("plan.currency")}
-                              </span>
-                              <span className="font-bold text-green-800 dark:text-green-300 text-base">
-                                {(
-                                  selectedPlan.price *
-                                  (1 - verifiedCoupon.data.discount / 100)
-                                ).toFixed(2)}{" "}
-                                {t("plan.currency")}
-                              </span>
+                          )}
+                        {((verifiedCoupon.data?.discount && couponType === 0) ||
+                          (verifiedCoupon.data?.discountFixed && couponType === 1)) &&
+                          !selectedPlan && (
+                            <div className="pt-2 border-t border-green-200 dark:border-green-700">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-green-700 dark:text-green-400">
+                                  {t("plan.discount") || "الخصم"}:
+                                </span>
+                                <span className="font-bold text-green-800 dark:text-green-300">
+                                  {couponType === 0 && couponDiscountPercentage
+                                    ? `${couponDiscountPercentage}%`
+                                    : couponType === 1 && couponDiscountFixed
+                                    ? `${couponDiscountFixed} ${t("plan.currency")}`
+                                    : ""}
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                              {t("plan.you_save") || "توفير"}:
-                              <span className="font-semibold ml-1">
-                                {(
-                                  selectedPlan.price *
-                                  (verifiedCoupon.data.discount / 100)
-                                ).toFixed(2)}{" "}
-                                {t("plan.currency")}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        {verifiedCoupon.data?.discount && !selectedPlan && (
-                          <div className="pt-2 border-t border-green-200 dark:border-green-700">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-green-700 dark:text-green-400">
-                                {t("plan.discount") || "الخصم"}:
-                              </span>
-                              <span className="font-bold text-green-800 dark:text-green-300">
-                                {verifiedCoupon.data.discount}%
-                              </span>
-                            </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   )}
