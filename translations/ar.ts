@@ -362,6 +362,10 @@ export default {
     select_grade_title: "اختر الصف الدراسي",
     select_grade_message: "الرجاء اختر صف لاستعراض المواد الدراسية",
     choose_grade: "اختر الصف الدراسي",
+    first_semester: "الفصل الأول",
+    second_semester: "الفصل الثاني",
+    no_subjects_found: "لا توجد مواد",
+    no_subjects_message: "لا توجد مواد متاحة للفصل المختار",
   },
   profile: {
     profile: "الملف الشخصي",

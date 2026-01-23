@@ -30,13 +30,34 @@ export default function PaymentSuccess() {
       const sessionId = localStorage.getItem("paymentSessionId");
       const couponCode = localStorage.getItem("couponCode");
 
-      if (!planId || !sessionId) {
+      if (!planId) {
         setIsActivating(false);
         toast({
           title: "فشل العملية",
           description: "بيانات الاشتراك غير مكتملة.",
         });
         setTimeout(() => router.push("/"), 3000);
+        return;
+      }
+
+      // إذا لم يكن هناك sessionId، يعني أن الاشتراك تم مباشرة (السعر كان 0)
+      // في هذه الحالة، لا حاجة لإرسال طلب تفعيل لأن الاشتراك تم بالفعل
+      if (!sessionId) {
+        setIsActivating(false);
+        setActivationComplete(true);
+        // تنظيف البيانات المؤقتة
+        setTimeout(() => {
+          [
+            "selectedPlanId",
+            "selectedGradeId",
+            "selectedChildId",
+            "subscriptionNotes",
+            "currentPath",
+            "couponCode",
+          ].forEach((key) => localStorage.removeItem(key));
+
+          router.push(localStorage.getItem("currentPath") || "/");
+        }, 3000);
         return;
       }
 
@@ -69,6 +90,7 @@ export default function PaymentSuccess() {
           const requestBody: {
             planId: number;
             gradeId: number;
+            offerId?: number;
             sessionId: string;
             notes: string;
             accountId: number;
@@ -91,7 +113,9 @@ export default function PaymentSuccess() {
           const requestBody: {
             planId: number;
             gradeId: number;
+            offerId?: number;
             sessionId: string;
+            notes?: string;
             couponCode?: string;
           } = {
             planId: +planId,

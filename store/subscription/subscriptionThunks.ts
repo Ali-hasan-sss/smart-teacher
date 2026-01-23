@@ -32,7 +32,7 @@ export const createSubscription = createAsyncThunk(
       gradeId: number;
       planId: number;
       offerId?: number;
-      sessionId: string;
+      sessionId?: string;
       notes?: string;
       couponCode?: string;
     },
@@ -43,19 +43,21 @@ export const createSubscription = createAsyncThunk(
         gradeId: number;
         planId: number;
         offerId?: number;
-        sessionId: string;
+        sessionId?: string;
         notes?: string;
         couponCode?: string;
       } = {
         gradeId,
         planId,
-        sessionId,
       };
 
-      if (offerId !== undefined) {
+      if (offerId !== undefined && offerId !== 0) {
         requestBody.offerId = offerId;
       }
-      if (notes !== undefined) {
+      if (sessionId !== undefined && sessionId !== "") {
+        requestBody.sessionId = sessionId;
+      }
+      if (notes !== undefined && notes !== "") {
         requestBody.notes = notes;
       }
       if (couponCode !== undefined && couponCode !== "") {
@@ -109,7 +111,7 @@ export const createSubscriptionForChild = createAsyncThunk(
       gradeId: number;
       planId: number;
       offerId?: number;
-      sessionId: string;
+      sessionId?: string;
       notes: string;
       couponCode?: string;
       accountId: number;
@@ -121,20 +123,22 @@ export const createSubscriptionForChild = createAsyncThunk(
         gradeId: number;
         planId: number;
         offerId?: number;
-        sessionId: string;
+        sessionId?: string;
         notes: string;
         couponCode?: string;
         accountId: number;
       } = {
         gradeId,
         planId,
-        sessionId,
         notes,
         accountId,
       };
 
-      if (offerId !== undefined) {
+      if (offerId !== undefined && offerId !== 0) {
         requestBody.offerId = offerId;
+      }
+      if (sessionId !== undefined && sessionId !== "") {
+        requestBody.sessionId = sessionId;
       }
       if (couponCode !== undefined && couponCode !== "") {
         requestBody.couponCode = couponCode;

@@ -409,6 +409,10 @@ export default {
     select_grade_title: "Select Grade",
     select_grade_message: "Please select a grade to view subjects",
     choose_grade: "Choose Grade",
+    first_semester: "First Semester",
+    second_semester: "Second Semester",
+    no_subjects_found: "No Subjects Found",
+    no_subjects_message: "No subjects available for the selected semester",
   },
   profile: {
     profile: "Profile",

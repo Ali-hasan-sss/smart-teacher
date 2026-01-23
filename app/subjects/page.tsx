@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -14,6 +14,7 @@ import GradeSelect from "@/components/forms/GradeSelect";
 import PaginationComponent from "@/components/pagination";
 import SearchBar from "@/components/forms/SearchBar";
 import { AnimatePresence, motion } from "framer-motion";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
 export default function SubjectsList() {
@@ -33,6 +34,7 @@ export default function SubjectsList() {
     initialGradeId
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSemester, setSelectedSemester] = useState<"first" | "second">("first");
 
   useEffect(() => {
     if (selectedGrade) {
@@ -47,6 +49,22 @@ export default function SubjectsList() {
 
     router.push("/courses");
   };
+
+  // فلترة المواد حسب الفصل المختار
+  const filteredSubjects = useMemo(() => {
+    return items.filter((subject) => {
+      // إذا لم يكن هناك semester أو كان فارغاً، افتراضياً تعتبر الفصل الأول
+      const semester = subject.semester?.toLowerCase() || "first";
+      
+      if (selectedSemester === "first") {
+        // عرض الفصل الأول + المواد التي لا تحتوي على semester
+        return semester === "first" || !subject.semester || subject.semester === "";
+      } else {
+        // عرض الفصل الثاني فقط
+        return semester === "second";
+      }
+    });
+  }, [items, selectedSemester]);
 
   if (loading) return <LoaderPage />;
 
@@ -133,22 +151,66 @@ export default function SubjectsList() {
 
             {error && <p className="text-red-600 mb-4">{error}</p>}
 
+            {/* تابين الفصل الدراسي */}
+            <div className="mb-6">
+              <Tabs
+                value={selectedSemester}
+                onValueChange={(value) => setSelectedSemester(value as "first" | "second")}
+                className="w-full"
+              >
+                <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+                  <TabsTrigger value="first" className="text-base">
+                    {t("subjects.first_semester") || "الفصل الأول"}
+                  </TabsTrigger>
+                  <TabsTrigger value="second" className="text-base">
+                    {t("subjects.second_semester") || "الفصل الثاني"}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
             <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-              {items.map((subject) => (
-                <SubjectCard
-                  key={subject.id}
-                  subject={{
-                    id: subject.id,
-                    title: subject.title,
-                    description: subject.description,
-                    coursesCount: subject.coursesCount,
-                    image: subject.image,
-                    pdfFile: subject.pdfFile,
-                    courses: subject.courses,
-                  }}
-                  onStartStudy={() => startStudy(subject)}
-                />
-              ))}
+              {filteredSubjects.length > 0 ? (
+                filteredSubjects.map((subject) => (
+                  <SubjectCard
+                    key={subject.id}
+                    subject={{
+                      id: subject.id,
+                      title: subject.title,
+                      description: subject.description,
+                      coursesCount: subject.coursesCount,
+                      image: subject.image,
+                      pdfFile: subject.pdfFile,
+                      courses: subject.courses,
+                    }}
+                    onStartStudy={() => startStudy(subject)}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {t("subjects.no_subjects_found") || "لا توجد مواد"}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {t("subjects.no_subjects_message") || "لا توجد مواد متاحة للفصل المختار"}
+                  </p>
+                </div>
+              )}
             </div>
 
             <PaginationComponent

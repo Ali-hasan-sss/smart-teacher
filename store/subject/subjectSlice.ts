@@ -11,6 +11,7 @@ interface Subject {
   pdfFile: string;
   gradeId: number;
   id: number;
+  semester?: string;
   grade: {
     title: string;
     id: number;

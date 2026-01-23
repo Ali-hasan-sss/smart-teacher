@@ -7,6 +7,7 @@ import {
   fetchPlans,
   createSubscriptionForChild,
   verifyCoupon,
+  createSubscription,
 } from "@/store/subscription/subscriptionThunks";
 import { fetchAllGrades } from "@/store/grade/gradeThunk";
 import { getChildren } from "@/store/account/accountThunks";
@@ -278,6 +279,55 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
         selectedPlan.price,
         selectedPlan.activeOffer
       );
+
+      // إذا كان السعر النهائي 0، إرسال طلب الاشتراك مباشرة بدون sessionId
+      if (finalPrice === 0) {
+        const couponCodeValue = verifiedCoupon?.data?.isValid && couponCode.trim() 
+          ? couponCode.trim() 
+          : undefined;
+
+        if (isParentAccount) {
+          // إرسال طلب الاشتراك للأبناء
+          await dispatch(
+            createSubscriptionForChild({
+              gradeId: 0, // يمكن أن يكون 0
+              planId: selectedPlan.id,
+              offerId: selectedPlan.activeOffer?.id,
+              sessionId: undefined, // بدون sessionId
+              notes: notes,
+              couponCode: couponCodeValue,
+              accountId: selectedChild!,
+            })
+          ).unwrap();
+        } else {
+          // إرسال طلب الاشتراك العادي
+          await dispatch(
+            createSubscription({
+              gradeId: selectedGrade!,
+              planId: selectedPlan.id,
+              offerId: selectedPlan.activeOffer?.id,
+              sessionId: undefined, // بدون sessionId
+              notes: undefined,
+              couponCode: couponCodeValue,
+            })
+          ).unwrap();
+        }
+
+        // تنظيف البيانات المؤقتة
+        [
+          "selectedPlanId",
+          "selectedGradeId",
+          "selectedChildId",
+          "subscriptionNotes",
+          "paymentSessionId",
+          "couponCode",
+        ].forEach((key) => localStorage.removeItem(key));
+
+        // إغلاق النافذة المنبثقة والانتقال إلى صفحة النجاح
+        handleCloseModal();
+        router.push("/payment/success");
+        return;
+      }
 
       let products;
       let clientReferenceId;
