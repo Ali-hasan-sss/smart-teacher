@@ -30,6 +30,12 @@ export default function PaymentSuccess() {
       const sessionId = localStorage.getItem("paymentSessionId");
       const couponCode = localStorage.getItem("couponCode");
 
+      // مسار العودة بعد إتمام الاشتراك
+      const returnPath =
+        localStorage.getItem("subscriptionReturnPath") ||
+        localStorage.getItem("currentPath") ||
+        "/";
+
       if (!planId) {
         setIsActivating(false);
         toast({
@@ -52,11 +58,14 @@ export default function PaymentSuccess() {
             "selectedGradeId",
             "selectedChildId",
             "subscriptionNotes",
+            "paymentSessionId",
+            "subscriptionGradeId",
+            "subscriptionReturnPath",
             "currentPath",
             "couponCode",
           ].forEach((key) => localStorage.removeItem(key));
 
-          router.push(localStorage.getItem("currentPath") || "/");
+          router.push(returnPath || "/");
         }, 3000);
         return;
       }
@@ -76,7 +85,19 @@ export default function PaymentSuccess() {
         setIsActivating(false);
         setActivationComplete(true);
         setTimeout(() => {
-          router.push(localStorage.getItem("currentPath") || "/");
+          [
+            "selectedPlanId",
+            "selectedGradeId",
+            "selectedChildId",
+            "subscriptionNotes",
+            "paymentSessionId",
+            "subscriptionGradeId",
+            "subscriptionReturnPath",
+            "currentPath",
+            "couponCode",
+          ].forEach((key) => localStorage.removeItem(key));
+
+          router.push(returnPath || "/");
         }, 3000);
         return;
       }
@@ -142,11 +163,13 @@ export default function PaymentSuccess() {
             "selectedChildId",
             "subscriptionNotes",
             "paymentSessionId",
+            "subscriptionGradeId",
+            "subscriptionReturnPath",
             "currentPath",
             "couponCode",
           ].forEach((key) => localStorage.removeItem(key));
 
-          router.push(localStorage.getItem("currentPath") || "/");
+          router.push(returnPath || "/");
         }, 3000);
       } catch (error: any) {
         console.error(error);

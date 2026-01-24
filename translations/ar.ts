@@ -329,7 +329,7 @@ export default {
   payment: {
     success_title: "شكراً لك!",
     success_description:
-      "تم تأكيد عملية الدفع بنجاح وسيتم تفعيل اشتراكك قريباً",
+      "تم تأكيد عملية الدفع والاشتراك بنجاح ",
     activating: "جاري التفعيل...",
     activating_description: "نقوم الآن بتفعيل اشتراكك في منصة Smart Teacher",
     feature_schedule: "منصة التعلم",

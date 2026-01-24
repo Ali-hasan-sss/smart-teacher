@@ -183,6 +183,27 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     }
   }, [dispatch, isLoggedIn, isParentAccount]);
 
+  // إعادة تعيين حالة الكوبون عند فتح صفحة الخطط
+  useEffect(() => {
+    setCouponCode("");
+    dispatch(clearCouponVerification());
+  }, [dispatch]);
+
+  // تهيئة الصف المختار بناءً على الدرس الذي تم التحويل منه (إن وجد)
+  useEffect(() => {
+    if (!isParentAccount && typeof window !== "undefined") {
+      const storedGradeId = window.localStorage.getItem(
+        "subscriptionGradeId"
+      );
+      if (storedGradeId) {
+        const parsed = Number(storedGradeId);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+          setSelectedGrade(parsed);
+        }
+      }
+    }
+  }, [isParentAccount]);
+
   const handleSubscribe = async (
     planId: number,
     price: number,
@@ -264,7 +285,21 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
     if (verifiedCoupon?.data?.isValid && couponCode.trim()) {
       localStorage.setItem("couponCode", couponCode.trim());
     }
-    localStorage.setItem("currentPath", window.location.pathname);
+
+    // حفظ مسار العودة بعد الاشتراك:
+    // إذا كان هناك مسار محفوظ مسبقاً (مثلاً من صفحة الدروس) نستخدمه كما هو،
+    // وإلا نخزن المسار الحالي كقيمة افتراضية.
+    if (typeof window !== "undefined") {
+      const existingReturnPath = localStorage.getItem(
+        "subscriptionReturnPath"
+      );
+      if (!existingReturnPath) {
+        localStorage.setItem(
+          "subscriptionReturnPath",
+          window.location.pathname
+        );
+      }
+    }
 
     try {
       const secretKey =
@@ -320,6 +355,8 @@ export default function PlansView({ gradeId, onSubscribe }: PlansViewProps) {
           "selectedChildId",
           "subscriptionNotes",
           "paymentSessionId",
+          "subscriptionGradeId",
+          "subscriptionReturnPath",
           "couponCode",
         ].forEach((key) => localStorage.removeItem(key));
 

@@ -14,8 +14,6 @@ import CourseEntray from "@/components/courseIntray";
 import Chat from "@/components/chat";
 import StepQuizModal from "@/components/quizModal";
 import { isSubscribedToGrade } from "@/utils/getActiveSubscription";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import PlansModal from "@/components/planModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { trackCourseView, trackCourseStart, trackPageView } from "@/utils/gtm";
 
@@ -35,7 +33,6 @@ export default function CourseDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [images, setImages] = useState<string[]>([]);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
   const [subjectData, setSubjectData] = useState<any | null>(null);
   const subscriptions = useSelector(
     (state: RootState) => state.subscription.items
@@ -99,9 +96,18 @@ export default function CourseDetailsPage() {
 
   useEffect(() => {
     if (selectedCourse && !isFree && !isSubscribed) {
-      setModalVisible(true);
+      // المستخدم يحاول الدخول إلى درس غير مجاني وغير مشترك فيه
+      // تحويله إلى صفحة الخطط مع حفظ رابط العودة والصف الخاص بالدرس
+      if (typeof window !== "undefined") {
+        const targetPath = `/courses/${id}`;
+        localStorage.setItem("subscriptionReturnPath", targetPath);
+        if (gradeId) {
+          localStorage.setItem("subscriptionGradeId", String(gradeId));
+        }
+      }
+      router.push("/plans");
     }
-  }, [selectedCourse, isFree, isSubscribed]);
+  }, [selectedCourse, isFree, isSubscribed, id, router, gradeId]);
 
   useEffect(() => {
     const text = selectedCourse?.title || "";
@@ -145,18 +151,6 @@ export default function CourseDetailsPage() {
   useCourseActivityTracker(selectedCourse, started);
 
   if (subscriptionsLoading) return <LessonPlaceholder />;
-  if (!isFree && !isSubscribed && selectedCourse)
-    return (
-      <Dialog open={modalVisible} onOpenChange={setModalVisible}>
-        <DialogContent className="w-[90vw] max-w-4xl h-[80vh] overflow-y-auto">
-          <PlansModal
-            courseId={Number(id)}
-            gradeId={Number(selectedCourse?.gradetId)}
-            onClose={() => setModalVisible(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    );
   if (loading) return <LessonPlaceholder />;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!selectedCourse) return null;

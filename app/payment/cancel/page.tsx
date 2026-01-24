@@ -28,6 +28,8 @@ export default function PaymentCancel() {
         "selectedPlanId",
         "selectedGradeId",
         "paymentSessionId",
+        "subscriptionGradeId",
+        "subscriptionReturnPath",
         "currentPath",
       ].forEach((key) => localStorage.removeItem(key));
     };
@@ -43,6 +45,8 @@ export default function PaymentCancel() {
       "selectedPlanId",
       "selectedGradeId",
       "paymentSessionId",
+      "subscriptionGradeId",
+      "subscriptionReturnPath",
       "currentPath",
     ].forEach((key) => localStorage.removeItem(key));
 

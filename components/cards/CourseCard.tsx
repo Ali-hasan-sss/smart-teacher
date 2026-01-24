@@ -7,17 +7,7 @@ import { RootState } from "@/store";
 import { useSelector } from "react-redux";
 import { Progress } from "../ui/progress";
 import { formatDuration } from "@/utils/formatDuration";
-import { useState } from "react";
 import { motion } from "framer-motion";
-
-// استورد مودال الخطط من shadcn/ui
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogClose,
-} from "@/components/ui/dialog";
-import PlansModal from "../planModal";
 import { isSubscribedToGrade } from "@/utils/getActiveSubscription";
 import { trackCourseView } from "@/utils/gtm";
 
@@ -52,7 +42,6 @@ export default function CourseCard({
   const router = useRouter();
   const { t, language } = useTranslation();
   const { toggleLoading } = useSelector((state: RootState) => state.bookmark);
-  const [modalVisible, setModalVisible] = useState(false);
   const subscriptions = useSelector(
     (state: RootState) => state.subscription.items || []
   );
@@ -88,7 +77,22 @@ export default function CourseCard({
     if (isSubscribed) {
       router.push(`/courses/${id}`);
     } else {
-      setModalVisible(true);
+      // المستخدم غير مشترك والدرس غير مجاني -> تحويل إلى صفحة الخطط
+      if (typeof window !== "undefined") {
+        // حفظ رابط العودة بعد إتمام الاشتراك
+        localStorage.setItem(
+          "subscriptionReturnPath",
+          `/courses/${id}`
+        );
+        // حفظ الصف الذي يتبع له الدرس
+        if (gradeId) {
+          localStorage.setItem(
+            "subscriptionGradeId",
+            String(gradeId)
+          );
+        }
+      }
+      router.push("/plans");
     }
   };
 
@@ -99,8 +103,7 @@ export default function CourseCard({
     .join("");
 
   return (
-    <>
-      <motion.div
+    <motion.div
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: false, amount: 0.3 }}
@@ -227,15 +230,5 @@ export default function CourseCard({
           </div>
         </div>
       </motion.div>
-      <Dialog open={modalVisible} onOpenChange={setModalVisible}>
-        <DialogContent className="w-[90vw] max-w-4xl h-[80vh] overflow-y-auto">
-          <PlansModal
-            courseId={id}
-            gradeId={gradeId}
-            onClose={() => setModalVisible(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }

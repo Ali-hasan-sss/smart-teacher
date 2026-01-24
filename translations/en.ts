@@ -375,7 +375,7 @@ export default {
   payment: {
     success_title: "Thank You!",
     success_description:
-      "Payment confirmed successfully and your subscription will be activated soon",
+      "Payment confirmed successfully ",
     activating: "Activating...",
     activating_description:
       "We are now activating your subscription to Smart Teacher platform",
