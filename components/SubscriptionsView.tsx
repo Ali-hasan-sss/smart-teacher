@@ -3,9 +3,19 @@
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Calendar, GraduationCap, CreditCard, Clock, User } from "lucide-react";
+import Link from "next/link";
+import {
+  Calendar,
+  GraduationCap,
+  CreditCard,
+  Clock,
+  User,
+  Users,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { trackPageView } from "@/utils/gtm";
 import { useEffect } from "react";
 import { fetchParentHome } from "@/store/home/homeThunks";
@@ -31,11 +41,11 @@ export default function SubscriptionsView({
 
   // جلب الاشتراكات حسب نوع الحساب
   const { items: regularSubscriptions, loading: regularLoading } = useSelector(
-    (state: RootState) => state.subscription
+    (state: RootState) => state.subscription,
   );
 
   const { parentData, parentLoading } = useSelector(
-    (state: RootState) => state.home
+    (state: RootState) => state.home,
   );
 
   // تحديد البيانات المناسبة
@@ -53,7 +63,7 @@ export default function SubscriptionsView({
           "Processing child:",
           child.firstName,
           "subscriptions:",
-          child.subscriptions?.length
+          child.subscriptions?.length,
         );
         return (
           child.subscriptions?.map((sub) => ({
@@ -99,7 +109,7 @@ export default function SubscriptionsView({
       "useEffect - isParent:",
       isParent,
       "parentData exists:",
-      !!parentData
+      !!parentData,
     );
     if (isParent && !parentData) {
       console.log("Dispatching fetchParentHome...");
@@ -115,62 +125,28 @@ export default function SubscriptionsView({
     );
   }
 
-  if (!subscriptions || subscriptions.length === 0) {
-    console.log(
-      "No subscriptions found - isParent:",
-      isParent,
-      "parentData:",
-      parentData
-    );
+  const hasSubscriptions = subscriptions && subscriptions.length > 0;
 
+  // غير الأب: عند عدم وجود اشتراكات نعرض رسالة فقط
+  if (!isParent && !hasSubscriptions) {
     return (
       <div className="text-center py-12">
         <div className="text-gray-500 dark:text-gray-400 mb-6">
           <CreditCard className="w-20 h-20 mx-auto mb-4 opacity-50" />
         </div>
         <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
-          {isParent
-            ? t("subscriptions.no_children_subscriptions") ||
-              "لا توجد اشتراكات للأبناء"
-            : t("subscriptions.no_subscriptions")}
+          {t("subscriptions.no_subscriptions")}
         </h3>
         <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-          {isParent
-            ? t("subscriptions.no_children_subscriptions_description") ||
-              "لم تقم بالاشتراك في أي صف بعد"
-            : t("subscriptions.no_subscriptions_description")}
+          {t("subscriptions.no_subscriptions_description")}
         </p>
-        {isParent && parentData && (
-          <div className="mt-4 text-sm text-gray-400">
-            <p>عدد الأطفال: {parentData.children?.length || 0}</p>
-            <p>
-              إجمالي الاشتراكات:{" "}
-              {parentData.children?.reduce(
-                (total, child) => total + (child.subscriptions?.length || 0),
-                0
-              ) || 0}
-            </p>
-          </div>
-        )}
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {isParent
-            ? t("subscriptions.children_subscriptions")
-            : t("subscriptions.title")}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          {isParent
-            ? t("subscriptions.children_subtitle")
-            : t("subscriptions.subtitle")}
-        </p>
-      </div>
-      {subscriptions.map((subscription) => (
+  const renderSubscriptionsList = () =>
+    hasSubscriptions ? (
+      subscriptions.map((subscription) => (
         <Card
           key={subscription.id}
           className="overflow-hidden hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500"
@@ -293,7 +269,7 @@ export default function SubscriptionsView({
                         {Math.ceil(
                           (new Date(subscription.expireAt).getTime() -
                             new Date().getTime()) /
-                            (1000 * 60 * 60 * 24)
+                            (1000 * 60 * 60 * 24),
                         )}{" "}
                         {t("subscriptions.days")}
                       </span>
@@ -310,8 +286,8 @@ export default function SubscriptionsView({
                                 new Date().getTime()) /
                                 (new Date(subscription.expireAt).getTime() -
                                   new Date(subscription.createdAt).getTime())) *
-                                100
-                            )
+                                100,
+                            ),
                           )}%`,
                         }}
                       ></div>
@@ -322,7 +298,97 @@ export default function SubscriptionsView({
             </div>
           </CardContent>
         </Card>
-      ))}
+      ))
+    ) : (
+      <div className="text-center py-12">
+        <div className="text-gray-500 dark:text-gray-400 mb-6">
+          <CreditCard className="w-20 h-20 mx-auto mb-4 opacity-50" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          {t("subscriptions.no_children_subscriptions") ||
+            "لا توجد اشتراكات للأبناء"}
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          {t("subscriptions.no_children_subscriptions_description") ||
+            "لم يقم أطفالك بالاشتراك في أي صف بعد"}
+        </p>
+        {parentData && (
+          <div className="mt-4 text-sm text-gray-400">
+            <p>عدد الأطفال: {parentData.children?.length || 0}</p>
+          </div>
+        )}
+      </div>
+    );
+
+  const familyTabContent = () => (
+    <Card className="overflow-hidden border-2 border-dashed border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
+      <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {t("plan.family_plans") || "الخطط العائلية"}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t("subscriptions.family_plans_description") ||
+                "استعرض خطط الاشتراك العائلي واشترك لأبنائك"}
+            </p>
+          </div>
+        </div>
+        <Button asChild className="shrink-0 bg-blue-600 hover:bg-blue-700">
+          <Link href="/plans?mode=family">
+            {t("subscriptions.view_family_plans") || "عرض الخطط العائلية"}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  if (isParent) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {t("subscriptions.children_subscriptions")}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t("subscriptions.children_subtitle")}
+          </p>
+        </div>
+
+        <Tabs defaultValue="individual" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+            <TabsTrigger value="individual" className="text-base">
+              {t("subscriptions.individual_subscription") || "اشتراك فردي"}
+            </TabsTrigger>
+            <TabsTrigger value="family" className="text-base">
+              {t("subscriptions.family_subscription") || "اشتراك عائلي"}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="individual" className="space-y-6 mt-0">
+            {renderSubscriptionsList()}
+          </TabsContent>
+          <TabsContent value="family" className="mt-0">
+            {familyTabContent()}
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          {t("subscriptions.title")}
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          {t("subscriptions.subtitle")}
+        </p>
+      </div>
+      {renderSubscriptionsList()}
     </div>
   );
 }

@@ -13,7 +13,8 @@ import { useCourseActivityTracker } from "@/hooks/useCourseActivity";
 import CourseEntray from "@/components/courseIntray";
 import Chat from "@/components/chat";
 import StepQuizModal from "@/components/quizModal";
-import { isSubscribedToGrade } from "@/utils/getActiveSubscription";
+import { canAccessCourse } from "@/utils/getActiveSubscription";
+import { fetchSubscriptions } from "@/store/subscription/subscriptionThunks";
 import { AnimatePresence, motion } from "framer-motion";
 import { trackCourseView, trackCourseStart, trackPageView } from "@/utils/gtm";
 
@@ -24,7 +25,7 @@ export default function CourseDetailsPage() {
   const { id } = useParams();
 
   const { selectedCourse, loading, error } = useSelector(
-    (state: RootState) => state.course
+    (state: RootState) => state.course,
   );
 
   const [dir, setDir] = useState<"rtl" | "ltr">("ltr");
@@ -33,17 +34,40 @@ export default function CourseDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [images, setImages] = useState<string[]>([]);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [subjectData, setSubjectData] = useState<any | null>(null);
+  const [subjectData, setSubjectData] = useState<any | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const s = localStorage.getItem("selectedSubject");
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
+  const token = useSelector((state: RootState) => state.auth.token);
   const subscriptions = useSelector(
-    (state: RootState) => state.subscription.items
+    (state: RootState) => state.subscription.items,
   );
   const subscriptionsLoading = useSelector(
-    (state: RootState) => state.subscription.loading
+    (state: RootState) => state.subscription.loading,
   );
 
+  // جلب الاشتراكات عند زيارة صفحة الدرس (للمستخدم المسجل) للتحقق من الصلاحية
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchSubscriptions());
+    }
+  }, [token, dispatch]);
+
   const gradeId = Number(selectedCourse?.gradetId || 0);
-  const activeSub = isSubscribedToGrade(subscriptions, gradeId);
-  const isSubscribed = !!activeSub;
+  // معرف المادة: من الدورة أو من المادة المحفوظة في localStorage (عند الدخول من صفحة الدروس)
+  const subjectId =
+    selectedCourse?.subjectId != null
+      ? Number(selectedCourse.subjectId)
+      : subjectData?.id != null
+        ? Number(subjectData.id)
+        : undefined;
+  const isSubscribed = canAccessCourse(subscriptions || [], gradeId, subjectId);
   const isFree = selectedCourse?.isFree || false;
 
   console.log("Course details:", {
@@ -95,19 +119,25 @@ export default function CourseDetailsPage() {
   }, [started]);
 
   useEffect(() => {
-    if (selectedCourse && !isFree && !isSubscribed) {
-      // المستخدم يحاول الدخول إلى درس غير مجاني وغير مشترك فيه
-      // تحويله إلى صفحة الخطط مع حفظ رابط العودة والصف الخاص بالدرس
-      if (typeof window !== "undefined") {
-        const targetPath = `/courses/${id}`;
-        localStorage.setItem("subscriptionReturnPath", targetPath);
-        if (gradeId) {
-          localStorage.setItem("subscriptionGradeId", String(gradeId));
-        }
+    // عدم التحقق من إعادة التوجيه حتى نقرأ المادة من localStorage (للاشتراك بمادة)
+    if (!hasCheckedStorage || !selectedCourse || isFree || isSubscribed) return;
+    if (typeof window !== "undefined") {
+      const targetPath = `/courses/${id}`;
+      localStorage.setItem("subscriptionReturnPath", targetPath);
+      if (gradeId) {
+        localStorage.setItem("subscriptionGradeId", String(gradeId));
       }
-      router.push("/plans");
     }
-  }, [selectedCourse, isFree, isSubscribed, id, router, gradeId]);
+    router.push("/plans");
+  }, [
+    hasCheckedStorage,
+    selectedCourse,
+    isFree,
+    isSubscribed,
+    id,
+    router,
+    gradeId,
+  ]);
 
   useEffect(() => {
     const text = selectedCourse?.title || "";
@@ -126,13 +156,17 @@ export default function CourseDetailsPage() {
     }
   }, [dispatch, id, language]);
 
-  // جلب بيانات المادة من localStorage
+  // جلب بيانات المادة من localStorage (لضمان توفر subjectId للتحقق من اشتراك المادة)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("selectedSubject");
-      if (stored) {
-        setSubjectData(JSON.parse(stored));
+      try {
+        const stored = localStorage.getItem("selectedSubject");
+        if (stored) setSubjectData(JSON.parse(stored));
+      } finally {
+        setHasCheckedStorage(true);
       }
+    } else {
+      setHasCheckedStorage(true);
     }
   }, []);
 
@@ -143,7 +177,7 @@ export default function CourseDetailsPage() {
       trackCourseView(
         selectedCourse.id,
         selectedCourse.title,
-        selectedCourse.isFree
+        selectedCourse.isFree,
       );
     }
   }, [selectedCourse, id]);

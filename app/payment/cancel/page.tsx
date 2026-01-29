@@ -27,10 +27,17 @@ export default function PaymentCancel() {
       [
         "selectedPlanId",
         "selectedGradeId",
+        "selectedChildId",
+        "subscriptionNotes",
         "paymentSessionId",
         "subscriptionGradeId",
         "subscriptionReturnPath",
         "currentPath",
+        "couponCode",
+        "subscriptionType",
+        "subscriptionChildAccountIds",
+        "subscriptionGradeIds",
+        "subscriptionSubjectId",
       ].forEach((key) => localStorage.removeItem(key));
     };
   }, [router]);
@@ -40,14 +47,20 @@ export default function PaymentCancel() {
   };
 
   const handleGoHome = () => {
-    // تنظيف البيانات والعودة للرئيسية
     [
       "selectedPlanId",
       "selectedGradeId",
+      "selectedChildId",
+      "subscriptionNotes",
       "paymentSessionId",
       "subscriptionGradeId",
       "subscriptionReturnPath",
       "currentPath",
+      "couponCode",
+      "subscriptionType",
+      "subscriptionChildAccountIds",
+      "subscriptionGradeIds",
+      "subscriptionSubjectId",
     ].forEach((key) => localStorage.removeItem(key));
 
     router.push("/");

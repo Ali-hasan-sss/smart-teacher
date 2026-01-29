@@ -3,7 +3,13 @@ import {
   createSubscription,
   fetchSubscriptions,
   fetchPlans,
+  fetchFamilyPlans,
+  fetchSubjectBasedPlans,
+  fetchTeacherPlans,
   createSubscriptionForChild,
+  createSubjectBasedSubscription,
+  createFamilySubscription,
+  createTeacherSubscription,
   verifyCoupon,
 } from "./subscriptionThunks";
 
@@ -48,6 +54,8 @@ export interface Subscription {
   gradeId: number;
   planId: number;
   sessionId: string | null;
+  /** المادة في حالة الاشتراك حسب المادة (SubjectBased) */
+  subject?: { id: number; [key: string]: any } | null;
 }
 
 export interface ActiveOffer {
@@ -68,6 +76,8 @@ export interface Plan {
   price: number;
   expiredAt: string;
   activeOffer?: ActiveOffer | null;
+  /** عدد الأطفال المسموح به للخطة العائلية (من استجابة الخطط العائلية) */
+  numberOfChildren?: number;
 }
 
 interface SubscriptionState {
@@ -150,6 +160,48 @@ const subscriptionSlice = createSlice({
       state.plansError = action.payload as string;
     });
 
+    // Family plans cases (same state as plans)
+    builder.addCase(fetchFamilyPlans.pending, (state) => {
+      state.plansLoading = true;
+      state.plansError = null;
+    });
+    builder.addCase(fetchFamilyPlans.fulfilled, (state, action) => {
+      state.plansLoading = false;
+      state.plans = Array.isArray(action.payload) ? action.payload : [];
+    });
+    builder.addCase(fetchFamilyPlans.rejected, (state, action) => {
+      state.plansLoading = false;
+      state.plansError = action.payload as string;
+    });
+
+    // Subject-based plans
+    builder.addCase(fetchSubjectBasedPlans.pending, (state) => {
+      state.plansLoading = true;
+      state.plansError = null;
+    });
+    builder.addCase(fetchSubjectBasedPlans.fulfilled, (state, action) => {
+      state.plansLoading = false;
+      state.plans = Array.isArray(action.payload) ? action.payload : [];
+    });
+    builder.addCase(fetchSubjectBasedPlans.rejected, (state, action) => {
+      state.plansLoading = false;
+      state.plansError = action.payload as string;
+    });
+
+    // Teacher plans
+    builder.addCase(fetchTeacherPlans.pending, (state) => {
+      state.plansLoading = true;
+      state.plansError = null;
+    });
+    builder.addCase(fetchTeacherPlans.fulfilled, (state, action) => {
+      state.plansLoading = false;
+      state.plans = Array.isArray(action.payload) ? action.payload : [];
+    });
+    builder.addCase(fetchTeacherPlans.rejected, (state, action) => {
+      state.plansLoading = false;
+      state.plansError = action.payload as string;
+    });
+
     // Create subscription for child cases
     builder.addCase(createSubscriptionForChild.pending, (state) => {
       state.forChildLoading = true;
@@ -164,6 +216,62 @@ const subscriptionSlice = createSlice({
     builder.addCase(createSubscriptionForChild.rejected, (state, action) => {
       state.forChildLoading = false;
       state.forChildError = action.payload as string;
+    });
+
+    // Create subject-based subscription
+    builder.addCase(createSubjectBasedSubscription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      createSubjectBasedSubscription.fulfilled,
+      (state, action) => {
+        state.loading = false;
+        if (action.payload?.data) {
+          state.items.push(action.payload.data);
+        }
+      },
+    );
+    builder.addCase(
+      createSubjectBasedSubscription.rejected,
+      (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      },
+    );
+
+    // Create family subscription
+    builder.addCase(createFamilySubscription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(createFamilySubscription.fulfilled, (state, action) => {
+      state.loading = false;
+      if (action.payload?.data) {
+        const data = action.payload.data;
+        state.items.push(...(Array.isArray(data) ? data : [data]));
+      }
+    });
+    builder.addCase(createFamilySubscription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Create teacher subscription
+    builder.addCase(createTeacherSubscription.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(createTeacherSubscription.fulfilled, (state, action) => {
+      state.loading = false;
+      if (action.payload?.data) {
+        const data = action.payload.data;
+        state.items.push(...(Array.isArray(data) ? data : [data]));
+      }
+    });
+    builder.addCase(createTeacherSubscription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
     });
 
     // Coupon verification cases

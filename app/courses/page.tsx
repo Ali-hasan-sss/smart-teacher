@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import CourseCard from "@/components/cards/CourseCard";
 import SubjectIntro from "@/components/SubjectIntro";
-import { AppDispatch } from "@/store";
-import { useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
 import { addBookmark, removeBookmark } from "@/store/bookmark/bookmarkThunks";
+import { fetchSubscriptions } from "@/store/subscription/subscriptionThunks";
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,11 +29,19 @@ export default function CoursesPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const token = useSelector((state: RootState) => state.auth.token);
   const [subject, setSubject] = useState<any | null>(null);
   const [view, setView] = useState<
     "intro" | "lessons" | "quizzes" | "pdf" | "selfTest"
   >("intro");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // جلب الاشتراكات عند زيارة صفحة الدروس (للمستخدم المسجل) للتحقق من الصلاحية
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchSubscriptions());
+    }
+  }, [token, dispatch]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -51,7 +60,7 @@ export default function CoursesPage() {
       ["lessons", "quizzes", "pdf", "selfTest"].includes(viewParam)
     ) {
       setView(
-        viewParam as "intro" | "lessons" | "quizzes" | "pdf" | "selfTest"
+        viewParam as "intro" | "lessons" | "quizzes" | "pdf" | "selfTest",
       );
     }
   }, [searchParams]);
@@ -61,13 +70,13 @@ export default function CoursesPage() {
   const lessons = subject.courses
     .filter((c: any) => c.type === "Content")
     .filter((c: any) =>
-      c.title.toLowerCase().includes(searchTerm.toLowerCase())
+      c.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   const quizzes = subject.courses
     .filter((c: any) => c.type === "Quiz")
     .filter((c: any) =>
-      c.title.toLowerCase().includes(searchTerm.toLowerCase())
+      c.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   const isBookmarked = (courseId: number) => {
@@ -88,14 +97,14 @@ export default function CoursesPage() {
       const updatedCourses = subject.courses.map((course: CourseItem) =>
         course.id === courseId
           ? { ...course, bookmarked: !isBookmarked(courseId) }
-          : course
+          : course,
       );
 
       setSubject({ ...subject, courses: updatedCourses });
 
       localStorage.setItem(
         "selectedSubject",
-        JSON.stringify({ ...subject, courses: updatedCourses })
+        JSON.stringify({ ...subject, courses: updatedCourses }),
       );
     } catch (err) {
       console.error(err);
@@ -177,6 +186,7 @@ export default function CoursesPage() {
                 courseDuration={course.courseDuration}
                 courseFile={course.courseFile}
                 gradeId={course.gradetId}
+                subjectId={course.subjectId ?? subject?.id}
                 isFree={course.isFree}
                 isBookmarked={course.bookmarked}
                 onToggleBookmark={() => toggleBookmark(course.id)}

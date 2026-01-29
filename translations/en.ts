@@ -283,6 +283,10 @@ export default {
     request_timeout: "Request timeout. Please try again.",
     loading_error: "Error loading plans",
     retry: "Retry",
+    regular_plans: "Regular Plans",
+    family_plans: "Family Plans",
+    subject_based_plans: "Subject-based Plans",
+    teacher_plans: "Teacher Plans",
     select_grades: "Select Grade Level",
     select_grades_required: "Please select at least one grade level",
     grades: "grade",
@@ -301,8 +305,24 @@ export default {
     expires_on: "Expires on",
     // Parent child selection modal
     select_child: "Select Child",
+    select_children: "Select Children",
     select_child_required: "Please select at least one child",
     selected_child: "Selected Child",
+    selected_children: "Selected Children",
+    selected_grades: "Selected Grades",
+    select_subject: "Select Subject",
+    select_subject_required: "Please select a subject",
+    selected_subject: "Selected Subject",
+    subject: "Subject",
+    subject_not_found: "Subject not found",
+    family_select_up_to_children:
+      "You can select up to {{count}} children for this plan.",
+    family_children_limit_exceeded:
+      "This plan allows up to {{count}} children only.",
+    teacher_select_up_to_grades:
+      "You can select up to 4 grades for this subscription.",
+    teacher_grades_limit_exceeded:
+      "You can select up to 4 grades for this subscription only.",
     loading_children: "Loading children...",
     no_children_found: "No children linked to your account",
     child_not_found: "Selected child not found",
@@ -374,8 +394,7 @@ export default {
   },
   payment: {
     success_title: "Thank You!",
-    success_description:
-      "Payment confirmed successfully ",
+    success_description: "Payment confirmed successfully ",
     activating: "Activating...",
     activating_description:
       "We are now activating your subscription to Smart Teacher platform",
@@ -546,6 +565,11 @@ export default {
     subscription_id: "Subscription ID",
     time_remaining: "Time Remaining",
     days: "days",
+    view_family_plans: "View Family Plans",
+    family_plans_description:
+      "Browse family subscription plans and subscribe for your children",
+    individual_subscription: "Individual Subscription",
+    family_subscription: "Family Subscription",
   },
   parentChild: {
     child_added_successfully: "Child added successfully",

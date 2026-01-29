@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchSubjects } from "@/store/subject/subjectThunk";
+import { fetchSubscriptions } from "@/store/subscription/subscriptionThunks";
 import { useTranslation } from "@/hooks/useTranslation";
 import SubjectCard, { SubjectCardProps } from "@/components/cards/SubjectCard";
 import LoaderPage from "@/components/loaders/LoaderPage";
@@ -23,26 +24,36 @@ export default function SubjectsList() {
   const searchParams = useSearchParams();
   const { t, language } = useTranslation();
   const { items, totalPages, loading, error } = useSelector(
-    (state: RootState) => state.subjects
+    (state: RootState) => state.subjects,
   );
   const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
   const gradeIdFromParams = searchParams.get("grade");
   const initialGradeId = gradeIdFromParams
     ? Number(gradeIdFromParams)
     : user?.grade?.id;
   const [selectedGrade, setSelectedGrade] = useState<number | null>(
-    initialGradeId
+    initialGradeId,
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSemester, setSelectedSemester] = useState<"first" | "second">("first");
+  const [selectedSemester, setSelectedSemester] = useState<"first" | "second">(
+    "first",
+  );
 
   useEffect(() => {
     if (selectedGrade) {
       dispatch(
-        fetchSubjects({ gradeId: selectedGrade, pageNumber: currentPage })
+        fetchSubjects({ gradeId: selectedGrade, pageNumber: currentPage }),
       );
     }
   }, [selectedGrade, currentPage, dispatch, language]);
+
+  // جلب الاشتراكات عند زيارة صفحة المواد (للمستخدم المسجل) للتحقق من صلاحية الدخول للدروس
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchSubscriptions());
+    }
+  }, [token, dispatch]);
 
   const startStudy = (subject: SubjectCardProps["subject"]) => {
     localStorage.setItem("selectedSubject", JSON.stringify(subject));
@@ -55,10 +66,12 @@ export default function SubjectsList() {
     return items.filter((subject) => {
       // إذا لم يكن هناك semester أو كان فارغاً، افتراضياً تعتبر الفصل الأول
       const semester = subject.semester?.toLowerCase() || "first";
-      
+
       if (selectedSemester === "first") {
         // عرض الفصل الأول + المواد التي لا تحتوي على semester
-        return semester === "first" || !subject.semester || subject.semester === "";
+        return (
+          semester === "first" || !subject.semester || subject.semester === ""
+        );
       } else {
         // عرض الفصل الثاني فقط
         return semester === "second";
@@ -155,7 +168,9 @@ export default function SubjectsList() {
             <div className="mb-6">
               <Tabs
                 value={selectedSemester}
-                onValueChange={(value) => setSelectedSemester(value as "first" | "second")}
+                onValueChange={(value) =>
+                  setSelectedSemester(value as "first" | "second")
+                }
                 className="w-full"
               >
                 <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
@@ -207,7 +222,8 @@ export default function SubjectsList() {
                     {t("subjects.no_subjects_found") || "لا توجد مواد"}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    {t("subjects.no_subjects_message") || "لا توجد مواد متاحة للفصل المختار"}
+                    {t("subjects.no_subjects_message") ||
+                      "لا توجد مواد متاحة للفصل المختار"}
                   </p>
                 </div>
               )}

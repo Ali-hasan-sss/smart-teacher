@@ -23,14 +23,38 @@ export default function PaymentSuccess() {
     if (activatedRef.current) return;
     activatedRef.current = true;
 
+    const keysToClean = [
+      "selectedPlanId",
+      "selectedGradeId",
+      "selectedChildId",
+      "subscriptionNotes",
+      "paymentSessionId",
+      "subscriptionGradeId",
+      "subscriptionReturnPath",
+      "currentPath",
+      "couponCode",
+      "subscriptionType",
+      "subscriptionChildAccountIds",
+      "subscriptionGradeIds",
+      "subscriptionSubjectId",
+    ];
+
     const activateSubscription = async () => {
       const planId = localStorage.getItem("selectedPlanId");
       const gradeId = localStorage.getItem("selectedGradeId");
       const childId = localStorage.getItem("selectedChildId");
       const sessionId = localStorage.getItem("paymentSessionId");
       const couponCode = localStorage.getItem("couponCode");
+      const subscriptionType =
+        localStorage.getItem("subscriptionType") || "regular";
+      const subscriptionChildAccountIds = localStorage.getItem(
+        "subscriptionChildAccountIds",
+      );
+      const subscriptionGradeIds = localStorage.getItem("subscriptionGradeIds");
+      const subscriptionSubjectId = localStorage.getItem(
+        "subscriptionSubjectId",
+      );
 
-      // مسار العودة بعد إتمام الاشتراك
       const returnPath =
         localStorage.getItem("subscriptionReturnPath") ||
         localStorage.getItem("currentPath") ||
@@ -46,36 +70,30 @@ export default function PaymentSuccess() {
         return;
       }
 
-      // إذا لم يكن هناك sessionId، يعني أن الاشتراك تم مباشرة (السعر كان 0)
-      // في هذه الحالة، لا حاجة لإرسال طلب تفعيل لأن الاشتراك تم بالفعل
       if (!sessionId) {
         setIsActivating(false);
         setActivationComplete(true);
-        // تنظيف البيانات المؤقتة
         setTimeout(() => {
-          [
-            "selectedPlanId",
-            "selectedGradeId",
-            "selectedChildId",
-            "subscriptionNotes",
-            "paymentSessionId",
-            "subscriptionGradeId",
-            "subscriptionReturnPath",
-            "currentPath",
-            "couponCode",
-          ].forEach((key) => localStorage.removeItem(key));
-
+          keysToClean.forEach((key) => localStorage.removeItem(key));
           router.push(returnPath || "/");
         }, 3000);
         return;
       }
 
-      // التحقق من وجود بيانات إما الصف أو الابن
-      if (!gradeId && !childId) {
+      const hasRequiredData =
+        subscriptionType === "family"
+          ? subscriptionChildAccountIds
+          : subscriptionType === "teacher"
+            ? subscriptionGradeIds
+            : subscriptionType === "subjectBased"
+              ? subscriptionSubjectId
+              : gradeId || childId;
+
+      if (!hasRequiredData) {
         setIsActivating(false);
         toast({
           title: "فشل العملية",
-          description: "لم يتم تحديد الصف أو الابن.",
+          description: "لم يتم تحديد البيانات المطلوبة للاشتراك.",
         });
         setTimeout(() => router.push("/"), 3000);
         return;
@@ -85,18 +103,7 @@ export default function PaymentSuccess() {
         setIsActivating(false);
         setActivationComplete(true);
         setTimeout(() => {
-          [
-            "selectedPlanId",
-            "selectedGradeId",
-            "selectedChildId",
-            "subscriptionNotes",
-            "paymentSessionId",
-            "subscriptionGradeId",
-            "subscriptionReturnPath",
-            "currentPath",
-            "couponCode",
-          ].forEach((key) => localStorage.removeItem(key));
-
+          keysToClean.forEach((key) => localStorage.removeItem(key));
           router.push(returnPath || "/");
         }, 3000);
         return;
@@ -105,36 +112,78 @@ export default function PaymentSuccess() {
       try {
         setIsActivating(true);
 
-        // تحديد نوع الطلب حسب وجود childId
-        if (childId) {
-          // للحسابات من نوع Parent - استخدام الرابط الجديد
+        if (subscriptionType === "family") {
+          const childAccountIds = JSON.parse(
+            subscriptionChildAccountIds || "[]",
+          ) as number[];
+          const requestBody: {
+            planId: number;
+            childAccountIds: number[];
+            sessionId: string;
+            notes?: string;
+            couponCode?: string;
+          } = {
+            planId: +planId,
+            childAccountIds,
+            sessionId,
+            notes: localStorage.getItem("subscriptionNotes") || "",
+          };
+          if (couponCode) requestBody.couponCode = couponCode;
+          await axios.post("/api/Client/Subscription/Family", requestBody);
+        } else if (subscriptionType === "teacher") {
+          const gradeIds = JSON.parse(subscriptionGradeIds || "[]") as number[];
+          const requestBody: {
+            planId: number;
+            gradeIds: number[];
+            sessionId: string;
+            notes?: string;
+            couponCode?: string;
+          } = {
+            planId: +planId,
+            gradeIds,
+            sessionId,
+            notes: localStorage.getItem("subscriptionNotes") || "",
+          };
+          if (couponCode) requestBody.couponCode = couponCode;
+          await axios.post("/api/Client/Subscription/Teacher", requestBody);
+        } else if (subscriptionType === "subjectBased") {
+          const requestBody: {
+            planId: number;
+            subjectId: number;
+            sessionId: string;
+            notes?: string;
+            couponCode?: string;
+          } = {
+            planId: +planId,
+            subjectId: +subscriptionSubjectId!,
+            sessionId,
+          };
+          if (couponCode) requestBody.couponCode = couponCode;
+          await axios.post(
+            "/api/Client/Subscription/SubjectBased",
+            requestBody,
+          );
+        } else if (childId) {
           const requestBody: {
             planId: number;
             gradeId: number;
-            offerId?: number;
             sessionId: string;
             notes: string;
             accountId: number;
             couponCode?: string;
           } = {
             planId: +planId,
-            gradeId: +gradeId! || 0, // يمكن أن يكون 0 إذا لم يتم تحديده
+            gradeId: +gradeId! || 0,
             sessionId,
             notes: localStorage.getItem("subscriptionNotes") || "",
             accountId: +childId,
           };
-
-          if (couponCode) {
-            requestBody.couponCode = couponCode;
-          }
-
+          if (couponCode) requestBody.couponCode = couponCode;
           await axios.post("/api/Client/Subscription/ForChild", requestBody);
         } else {
-          // للحسابات العادية
           const requestBody: {
             planId: number;
             gradeId: number;
-            offerId?: number;
             sessionId: string;
             notes?: string;
             couponCode?: string;
@@ -143,32 +192,15 @@ export default function PaymentSuccess() {
             gradeId: +gradeId!,
             sessionId,
           };
-
-          if (couponCode) {
-            requestBody.couponCode = couponCode;
-          }
-
+          if (couponCode) requestBody.couponCode = couponCode;
           await axios.post("/api/Client/Subscription", requestBody);
         }
 
         localStorage.setItem(`activated_${sessionId}`, "true");
         setIsActivating(false);
         setActivationComplete(true);
-
-        // تنظيف البيانات المؤقتة
         setTimeout(() => {
-          [
-            "selectedPlanId",
-            "selectedGradeId",
-            "selectedChildId",
-            "subscriptionNotes",
-            "paymentSessionId",
-            "subscriptionGradeId",
-            "subscriptionReturnPath",
-            "currentPath",
-            "couponCode",
-          ].forEach((key) => localStorage.removeItem(key));
-
+          keysToClean.forEach((key) => localStorage.removeItem(key));
           router.push(returnPath || "/");
         }, 3000);
       } catch (error: any) {
@@ -179,7 +211,6 @@ export default function PaymentSuccess() {
           description:
             error?.response?.data?.message || "حدث خطأ أثناء تفعيل الاشتراك.",
         });
-        // setTimeout(() => router.push("/"), 3000);
       }
     };
 
